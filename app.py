@@ -60,6 +60,34 @@ st.markdown("""
         color: var(--on-surface) !important;
     }
 
+    /* Inputs Styling */
+    .stTextInput > div > div > input, 
+    .stNumberInput > div > div > input,
+    .stSelectbox > div > div > div {
+        background-color: #F5F5F7 !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 12px 16px !important;
+        color: var(--on-surface) !important;
+        transition: border 0.2s ease !important;
+    }
+    
+    .stTextInput > div > div > input:focus, 
+    .stNumberInput > div > div > input:focus,
+    .stSelectbox > div > div > div:focus-within {
+        border: 1px solid var(--primary) !important;
+        outline: none !important;
+    }
+
+    /* File Uploader Card */
+    [data-testid="stFileUploadDropzone"] {
+        background-color: #F5F5F7 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 32px !important;
+        box-shadow: 0px 10px 40px rgba(0,0,0,0.04) !important;
+    }
+
     /* Hero Section Styling */
     .hero-wrapper {
         display: flex;
@@ -126,6 +154,59 @@ st.markdown("""
         line-height: 1.3;
     }
     .bento-text {
+        font-size: 15px;
+        color: var(--on-surface-variant);
+        line-height: 1.5;
+    }
+
+    /* Problem Section */
+    .problem-section {
+        padding: 64px 20px;
+        background-color: var(--surface-container-lowest);
+        text-align: center;
+        margin-top: 40px;
+    }
+    .problem-headline {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--on-surface);
+        margin-bottom: 16px;
+        letter-spacing: -0.01em;
+    }
+    .problem-subheadline {
+        font-size: 17px;
+        color: var(--on-surface-variant);
+        max-width: 700px;
+        margin: 0 auto 48px auto;
+        line-height: 1.5;
+    }
+    .pain-points-grid {
+        display: flex;
+        gap: 24px;
+        justify-content: center;
+        flex-wrap: wrap;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .pain-point-card {
+        background-color: var(--surface-container-low);
+        border-radius: 12px;
+        padding: 32px;
+        width: 320px;
+        text-align: left;
+    }
+    .pain-point-icon {
+        color: var(--primary);
+        font-size: 32px;
+        margin-bottom: 16px;
+    }
+    .pain-point-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--on-surface);
+        margin-bottom: 8px;
+    }
+    .pain-point-desc {
         font-size: 15px;
         color: var(--on-surface-variant);
         line-height: 1.5;
@@ -242,6 +323,32 @@ if not st.session_state["app_started"]:
             st.rerun()
     with col4:
         st.button("View Documentation", use_container_width=True)
+
+    st.markdown("""
+        <div class="problem-section">
+            <h2 class="problem-headline">Still struggling with manual water network analysis?</h2>
+            <p class="problem-subheadline">
+                Manual iteration of pipe diameters is time-consuming, prone to human error, and often results in networks that fail to meet strict hydraulic compliance standards.
+            </p>
+            <div class="pain-points-grid">
+                <div class="pain-point-card">
+                    <div class="pain-point-icon"><span class="material-symbols-outlined">schedule</span></div>
+                    <h3 class="pain-point-title">Wasted Time</h3>
+                    <p class="pain-point-desc">Hours spent manually updating pipe sizes and re-running simulations for every minor network change.</p>
+                </div>
+                <div class="pain-point-card">
+                    <div class="pain-point-icon"><span class="material-symbols-outlined">warning</span></div>
+                    <h3 class="pain-point-title">Compliance Risks</h3>
+                    <p class="pain-point-desc">Difficulty ensuring all nodes and links meet the strict pressure and velocity standards of Permen PU No. 18/PRT/M/2007.</p>
+                </div>
+                <div class="pain-point-card">
+                    <div class="pain-point-icon"><span class="material-symbols-outlined">analytics</span></div>
+                    <h3 class="pain-point-title">Suboptimal Design</h3>
+                    <p class="pain-point-desc">Trial-and-error approaches often lead to oversized pipes, unnecessarily increasing project construction costs.</p>
+                </div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("""
         <div class="bento-grid">
