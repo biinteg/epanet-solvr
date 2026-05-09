@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from views import styles
 from modules.auto_solver import run_auto_solver
 from modules.pressure_analysis import run_pressure_analysis
-from modules.hardy_cross import run_hard_cross
+from modules.hardy_cross import run_hardy_cross
 from modules.helpers import warnai_status_solver, warnai_status_tekanan, tampilkan_network
 
 def add_log(msg, type='info'):
