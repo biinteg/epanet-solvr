@@ -83,14 +83,22 @@ def run_auto_solver(tmp_path):
             if sesuai_permen:
                 patuh += 1
 
+            # Get start and end nodes for descriptive name
+            node_indices = d.getLinkNodes(i + 1)
+            node_ids = d.getNodeNameID()
+            from_node = node_ids[node_indices[0] - 1]
+            to_node = node_ids[node_indices[1] - 1]
+            label_pipa = f"Pipa {from_node} - {to_node}"
+
             hasil.append({
-                "ID Pipa": link_ids[i],
+                "ID": link_ids[i],
+                "Nama Pipa": label_pipa,
                 "Diameter Awal": f"{awal:.0f} mm",
                 "Diameter Baru": f"{akhir:.0f} mm",
                 "Velocity": f"{v:.3f} m/s",
                 "Headloss": f"{h:.3f} m/km",
-                "Status Optimasi": status,
-                "Status Permen PU": "Aman" if sesuai_permen else "Tidak Aman"
+                "Status": status,
+                "Compliance": "Aman" if sesuai_permen else "Tidak Aman"
             })
 
         df = pd.DataFrame(hasil)

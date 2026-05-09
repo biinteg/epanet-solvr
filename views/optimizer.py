@@ -203,7 +203,7 @@ def render():
                 tabs = st.tabs(["Diameters (Stage 1)", "Pressure (Stage 2)", "Final Network"])
                 with tabs[0]:
                     st.markdown("### Hasil Optimasi Diameter")
-                    st.dataframe(res["stage1"]["df"].style.map(warnai_status_solver, subset=["Status Optimasi"]), use_container_width=True)
+                    st.dataframe(res["stage1"]["df"].style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
                 with tabs[1]:
                     st.markdown("### Perbandingan Tekanan Final")
                     if "prv_results" in res["stage2"]:
@@ -230,7 +230,7 @@ def render():
 
             elif res["type"] == "auto_solver":
                 st.markdown("### 📊 Ringkasan Optimasi Diameter")
-                st.dataframe(res["df"].style.map(warnai_status_solver, subset=["Status Optimasi"]), use_container_width=True)
+                st.dataframe(res["df"].style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
                 with open(res["inp_file_path"], "rb") as f:
                     st.download_button("📥 Download Optimized Network", data=f, file_name="Diameter_Optimized.inp", use_container_width=True)
 
