@@ -1,0 +1,22 @@
+[
+  {
+    "id": "TC001",
+    "title": "test_hardy_cross_solver_api",
+    "description": "Verify the Hardy Cross Solver API correctly implements the hydraulic balancing method and returns accurate flow adjustments for a given network input."
+  },
+  {
+    "id": "TC002",
+    "title": "test_auto_solver_api",
+    "description": "Test the Auto Solver API to ensure it optimizes pipe diameters automatically and returns feasible and optimized network configurations."
+  },
+  {
+    "id": "TC003",
+    "title": "test_pressure_analysis_api",
+    "description": "Validate the Pressure Analysis API for correct analysis of pressure distribution and PRV stabilization under various network conditions."
+  },
+  {
+    "id": "TC004",
+    "title": "test_network_helpers_api",
+    "description": "Check the Network Helpers API for proper functionality in renaming network elements and generating accurate visualizations, handling errors gracefully if WNTR is not fully functional."
+  }
+]

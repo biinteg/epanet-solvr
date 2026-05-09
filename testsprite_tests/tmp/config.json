@@ -2,18 +2,18 @@
   "status": "commited",
   "type": "frontend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:8501",
+  "localEndpoint": "http://localhost:5173",
   "loginUser": "admin",
   "loginPassword": "password",
   "executionArgs": {
     "projectName": "epanet-solvr",
-    "projectPath": "d:\\Documents\\epanet-solvr",
+    "projectPath": "d:/Documents/epanet-solvr",
     "testIds": [],
     "additionalInstruction": "",
-    "serverMode": "production",
+    "serverMode": "development",
     "envs": {
       "API_KEY": "sk-user-F4H6w0vYegSPqMtRwgC44kQLNOA8ubXp1yOcx-xPoIFYXVzVE84ZWpWdlauTcym4t05CqS1uo6-qBOf_QBGku7Osfr2BZchOri0ZXGpryl-nRA1iUQaeBH_DYG7PFHSxhlc"
     }
   },
-  "serverPort": 54795
+  "serverPort": 54076
 }

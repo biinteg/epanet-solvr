@@ -1,49 +1,15 @@
 version: "2"
-type: frontend
+type: backend
 tech_stack:
-  - Python
-  - Streamlit
-  - wntr
-  - pandas
-routes:
-  - path: /
-    file: app.py
-    auth_required: false
-    description: Main single-page application for EPANET Solver
+  - python
 features:
-  - name: Landing Page Navigation
-    description: View hero section and navigate to solver functionality
+  - name: Auto Solver
+    description: Run auto optimization of EPANET network
     files:
-      - app.py
-    entry_route: /
-    user_interactions:
-      - View landing page content
-      - Click "Get Started" button to proceed to solver
-      - Click "View Documentation" button
-    api_calls: []
-    auth_required: false
-  - name: Network Upload
-    description: Upload an EPANET .inp file to the web application
-    files:
-      - app.py
-    entry_route: /
-    user_interactions:
-      - Upload an INP file using the file uploader dropzone
-      - View success message and file details
-    api_calls: []
-    auth_required: false
-  - name: Hydraulic Analysis
-    description: Run hydraulic analysis using Hardy Cross or other methods
-    files:
-      - app.py
-      - modules/hardy_cross.py
-      - modules/pressure_analysis.py
       - modules/auto_solver.py
-    entry_route: /
+    entry_route: N/A
     user_interactions:
-      - Navigate tabs (Network Overview, Pressure Analysis, Auto-Solver, Hardy Cross)
-      - View dataframes with node and link statistics
-      - Run auto-solver to iterate pipe diameters
+      - Provide INP file path
+      - Execute solver
     api_calls: []
-    auth_required: false
 known_limitations: []

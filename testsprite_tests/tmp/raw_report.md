@@ -12,140 +12,219 @@
 
 ## 2️⃣ Requirement Validation Summary
 
-#### Test TC001 Upload a valid network file successfully
-- **Test Code:** [TC001_Upload_a_valid_network_file_successfully.py](./TC001_Upload_a_valid_network_file_successfully.py)
+#### Test TC001 Upload an EPANET model and reach a ready state
+- **Test Code:** [TC001_Upload_an_EPANET_model_and_reach_a_ready_state.py](./TC001_Upload_an_EPANET_model_and_reach_a_ready_state.py)
 - **Test Error:** TEST BLOCKED
 
-The test could not be run — the Streamlit app is not connected so the UI cannot be used to upload a file.
+The feature could not be reached — the frontend landing page did not load and no upload controls were available, so the upload test cannot be executed.
 
 Observations:
-- A 'Connection error' dialog is visible stating 'Is Streamlit still running?' and showing restart instructions.
-- The page shows Streamlit's CONNECTING/Connection error state and no file upload control or other app UI is available.
-
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/d8eaddde-7cf9-41d1-acf5-3d816c5ea385
+- The /frontend/ page is blank and shows 0 interactive elements.
+- The root directory listing exists but no index/landing page or upload UI was found.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/9d6c4ff0-911f-4654-88b7-7a49a1e4676d
 - **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC002 Complete a Hardy Cross analysis workflow
-- **Test Code:** [TC002_Complete_a_Hardy_Cross_analysis_workflow.py](./TC002_Complete_a_Hardy_Cross_analysis_workflow.py)
+#### Test TC002 Run Ultra Optimize and view the optimization results
+- **Test Code:** [TC002_Run_Ultra_Optimize_and_view_the_optimization_results.py](./TC002_Run_Ultra_Optimize_and_view_the_optimization_results.py)
 - **Test Error:** TEST BLOCKED
 
-The test could not be run — the Streamlit app did not finish loading and the UI required to perform the Hardy Cross workflow is not available.
+The frontend application could not be reached — the local server is not responding.
 
 Observations:
-- The page shows a 'Connecting' placeholder and no application UI.
-- Only the 'Deploy' button and main menu are present; file upload control and the Hardy Cross tab are not visible.
-- No interactive elements for loading an EPANET file or starting the Hardy Cross workflow were found.
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/ee40ef34-0738-47f8-95a2-8ba282a13d0b
+- The page shows 'ERR_EMPTY_RESPONSE' and the message 'localhost didn’t send any data.'
+- Only a 'Reload' button is available; clicking it did not recover the app.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/538d4c1d-38b4-484b-8e74-9242f9029b1a
 - **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC003 Run the auto-solver and see updated results
-- **Test Code:** [TC003_Run_the_auto_solver_and_see_updated_results.py](./TC003_Run_the_auto_solver_and_see_updated_results.py)
+#### Test TC003 Switch to the topology visualizer after upload and inspect the schematic
+- **Test Code:** [TC003_Switch_to_the_topology_visualizer_after_upload_and_inspect_the_schematic.py](./TC003_Switch_to_the_topology_visualizer_after_upload_and_inspect_the_schematic.py)
 - **Test Error:** TEST BLOCKED
 
-The test could not be run — the Streamlit app did not finish loading and the UI controls required for the test are not available.
+The frontend UI could not be reached — the server returned no data and the page shows an empty response error.
 
 Observations:
-- The page header shows 'Connecting' and only the 'Deploy' button and main menu are visible.
-- No file upload control or Auto-Solver tab elements are present on the page.
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/bf4ac853-f4c4-4d73-8bd8-95fda60512ab
+- The page displays 'ERR_EMPTY_RESPONSE' with the message 'localhost didn\'t send any data.'
+- Only a 'Reload' button is present; no upload form, submit button, or visualizer selector is available.
+
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/7e9db198-8061-4871-a216-487a5ace338a
 - **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC004 View network overview tables after upload
-- **Test Code:** [TC004_View_network_overview_tables_after_upload.py](./TC004_View_network_overview_tables_after_upload.py)
+#### Test TC004 Move between landing and dashboard without losing the uploaded model
+- **Test Code:** [TC004_Move_between_landing_and_dashboard_without_losing_the_uploaded_model.py](./TC004_Move_between_landing_and_dashboard_without_losing_the_uploaded_model.py)
 - **Test Error:** TEST BLOCKED
 
-The test could not be run — the Streamlit app did not finish loading and the UI required for the test is not accessible.
+The test could not be run — the frontend UI did not load and no upload or navigation controls were available.
 
 Observations:
-- The page shows a persistent 'Connecting' skeleton and only top-bar controls (e.g., 'Deploy') are visible.
-- The EPANET file upload control is not present on the page.
-- The Network Overview tab and related node/link statistics are not visible.
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/c9ce071c-5eb3-4e15-84e5-54610fb0c1e2
+- The /frontend/ URL returned a blank page with no interactive elements.
+- The root / previously showed a directory listing; following the 'frontend/' link led to an empty page.
+- No upload control, Landing/Dashboard navigation, or other application UI elements were found.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/2e311feb-8899-4c63-b3bc-49632241d198
 - **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC005 Review pressure analysis results after upload
-- **Test Code:** [TC005_Review_pressure_analysis_results_after_upload.py](./TC005_Review_pressure_analysis_results_after_upload.py)
+#### Test TC005 Run manual loop analysis after uploading a network
+- **Test Code:** [TC005_Run_manual_loop_analysis_after_uploading_a_network.py](./TC005_Run_manual_loop_analysis_after_uploading_a_network.py)
 - **Test Error:** TEST BLOCKED
 
-The test could not be run — the application is not reachable and the UI cannot be used to upload a network or open the Pressure Analysis tab.
+The test could not be run — the frontend application could not be reached because the local server returned no response.
 
 Observations:
-- A modal titled 'Connection error' is shown on the page.
-- The modal message instructs to restart Streamlit (shows 'streamlit run yourscript.py').
-- No upload controls or Pressure Analysis navigation are visible; only a Close button is present.
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/35bfccb7-afae-415f-b379-62460be8ca66
+- The page shows 'This page isn’t working' and 'ERR_EMPTY_RESPONSE'.
+- Only a 'Reload' button is present and there are no upload controls or workflow UI elements to interact with.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/5628a753-3592-4eb9-925f-c631992586aa
 - **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC006 Return to solver tabs after upload
-- **Test Code:** [TC006_Return_to_solver_tabs_after_upload.py](./TC006_Return_to_solver_tabs_after_upload.py)
+#### Test TC006 Reject a missing file selection before analysis
+- **Test Code:** [TC006_Reject_a_missing_file_selection_before_analysis.py](./TC006_Reject_a_missing_file_selection_before_analysis.py)
 - **Test Error:** TEST BLOCKED
 
-The test could not be run — the web app did not fully load and the UI required for the test was not reachable.
+The upload feature could not be reached — no upload form or controls are present on the frontend page, so the validation behavior cannot be tested.
 
 Observations:
-- The page shows a persistent Streamlit "Connecting" / connection state and skeleton content.
-- Clicking the connection dialog Close button did not reveal the main UI or the file upload control.
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/2ad5a495-e1ee-4aec-936c-64aea79889e2
+- The /frontend/ page is blank and shows 0 interactive elements.
+- No upload input, submit button, or analysis controls were visible on the page.
+
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/e43629ff-5f22-42e8-a4ad-a2eaff36c717
 - **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC007 Reach the solver from the landing page
-- **Test Code:** [TC007_Reach_the_solver_from_the_landing_page.py](./TC007_Reach_the_solver_from_the_landing_page.py)
+#### Test TC007 Open manual loop analysis from the dashboard workflow selector
+- **Test Code:** [TC007_Open_manual_loop_analysis_from_the_dashboard_workflow_selector.py](./TC007_Open_manual_loop_analysis_from_the_dashboard_workflow_selector.py)
 - **Test Error:** TEST BLOCKED
 
-The test could not be run — the Streamlit app is not connected so the landing page cannot be entered.
+The application could not be reached — the UI cannot be loaded so the test cannot be run.
 
 Observations:
-- A "Connection error" dialog is shown with the message asking if Streamlit is still running.
-- The header shows 'CONNECTING' and no application content or start button is visible.
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/0e2f19f0-95e2-4d27-8a67-cabc10c9ccc8
+- The browser shows an error page stating 'This page isn’t working' and 'ERR_EMPTY_RESPONSE'.
+- The page only contains a single 'Reload' button and no upload controls or workflow selector were present.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/1e301984-1cd7-4d60-835d-9bfe0d567329
 - **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC008 Open the documentation from the landing page
-- **Test Code:** [TC008_Open_the_documentation_from_the_landing_page.py](./TC008_Open_the_documentation_from_the_landing_page.py)
+#### Test TC008 Switch from landing to dashboard after upload
+- **Test Code:** [TC008_Switch_from_landing_to_dashboard_after_upload.py](./TC008_Switch_from_landing_to_dashboard_after_upload.py)
 - **Test Error:** TEST FAILURE
 
-Documentation could not be accessed from the landing page because no documentation link or content is present in the UI.
+The landing page for the application is not available — the directory listing for / is shown instead of the app UI, so the upload and dashboard features cannot be exercised.
 
 Observations:
-- The main menu contains only Streamlit controls (Rerun, Auto rerun, Clear cache, Print, Record screen) and no Documentation link.
-- The page shows skeleton/placeholder content with no visible documentation panel or link.
-- No other navigation elements on the landing page lead to documentation.
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/11f17139-06d8-45a9-be1e-8506d8b49fb3
+- The page displays 'Directory listing for /' with links to files and folders.
+- No upload control or file chooser is present on the page.
+- No dashboard or navigation link to a dashboard view is present.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/29e774a1-56c8-433b-b35f-b1b2d451cee3
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC009 Show the empty state before any file is uploaded
-- **Test Code:** [TC009_Show_the_empty_state_before_any_file_is_uploaded.py](./TC009_Show_the_empty_state_before_any_file_is_uploaded.py)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/830a7eb1-324b-4490-bead-da5a1cda6689
-- **Status:** ✅ Passed
+#### Test TC009 Run Manual Loop Analysis and review the Hardy Cross output
+- **Test Code:** [TC009_Run_Manual_Loop_Analysis_and_review_the_Hardy_Cross_output.py](./TC009_Run_Manual_Loop_Analysis_and_review_the_Hardy_Cross_output.py)
+- **Test Error:** TEST BLOCKED
+
+The feature could not be reached — the frontend application did not load, so the upload and Manual Loop Analysis steps could not be run.
+
+Observations:
+- Navigating to /frontend/ produced a blank page with 0 interactive elements.
+- No upload form, buttons, or UI controls were present to upload an EPANET .inp file.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/1baf9021-ba2c-427e-9fa7-f3de04080b3a
+- **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
-#### Test TC010 Handle unsupported file upload gracefully
-- **Test Code:** [TC010_Handle_unsupported_file_upload_gracefully.py](./TC010_Handle_unsupported_file_upload_gracefully.py)
+#### Test TC010 Return to landing without losing the uploaded network
+- **Test Code:** [TC010_Return_to_landing_without_losing_the_uploaded_network.py](./TC010_Return_to_landing_without_losing_the_uploaded_network.py)
 - **Test Error:** TEST BLOCKED
 
-The upload feature could not be reached — the app is stuck in a 'Connecting' state and the file uploader control is not present.
+The test could not be run — the application's frontend UI did not load, so the UI elements required to perform the upload and view-switch actions are not available.
 
 Observations:
-- The page shows 'Connecting' and no application UI or file upload input is visible.
-- The main menu opened, but key menu items are disabled and no upload controls were found.
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/967f72fc-ea6c-457d-b1ea-d2eced457e55/de4388ab-a6b3-4e4e-93a0-d5c377750a87
+- Navigated to /frontend/index.html and the page rendered blank with 0 interactive elements.
+- The root previously showed a directory index and clicking 'frontend/' also produced a blank page, so the SPA is not being served from the expected entry points.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/6b331028-294e-48e3-841e-696dcf2eff33
+- **Status:** BLOCKED
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC011 Review manual loop analysis for a reuploaded network
+- **Test Code:** [TC011_Review_manual_loop_analysis_for_a_reuploaded_network.py](./TC011_Review_manual_loop_analysis_for_a_reuploaded_network.py)
+- **Test Error:** TEST BLOCKED
+
+The frontend application could not be reached — the single-page app did not render so upload and analysis controls are not available.
+
+Observations:
+- Navigated to /frontend/index.html and the page is blank with 0 interactive elements.
+- No upload controls or manual loop analysis options are visible.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/9e0ed666-9775-48db-8757-caf0c7c96f6b
+- **Status:** BLOCKED
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC012 Reject an unsupported file type
+- **Test Code:** [TC012_Reject_an_unsupported_file_type.py](./TC012_Reject_an_unsupported_file_type.py)
+- **Test Error:** TEST BLOCKED
+
+The frontend app could not be reached so the upload feature could not be tested.
+
+Observations:
+- Navigated to /frontend/ but the page is blank with no interactive elements.
+- No file upload control or submit button was visible.
+- The SPA did not render after waiting and reloading, preventing the test from running.
+
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/4dd8e446-e979-4d72-b183-2c3aee23422d
+- **Status:** BLOCKED
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC013 Require a network before manual loop analysis can run
+- **Test Code:** [TC013_Require_a_network_before_manual_loop_analysis_can_run.py](./TC013_Require_a_network_before_manual_loop_analysis_can_run.py)
+- **Test Error:** TEST BLOCKED
+
+The test could not be run — the application UI required for the manual loop analysis workflow was not reachable at the base URL.
+
+Observations:
+- Navigation to / succeeded but the page shows a server directory listing rather than the application UI.
+- No UI controls for uploading a network, selecting a manual loop analysis strategy, or viewing analysis output were present on the page.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/b4302003-769d-4230-b2ec-8ef656c34a3b
+- **Status:** BLOCKED
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC014 Require a Target PRV Setting before running Ultra Optimize
+- **Test Code:** [TC014_Require_a_Target_PRV_Setting_before_running_Ultra_Optimize.py](./TC014_Require_a_Target_PRV_Setting_before_running_Ultra_Optimize.py)
+- **Test Error:** TEST BLOCKED
+
+The frontend application could not be reached — the SPA did not load and the browser shows an ERR_EMPTY_RESPONSE page, so the Ultra Optimize validation test cannot be executed.
+
+Observations:
+- The page shows "ERR_EMPTY_RESPONSE" and "localhost didn’t send any data."
+- The frontend UI (upload form, strategy selector, run controls) is not present and there are 0 interactive elements for the app.
+- Multiple navigation and reload attempts were performed (including direct /frontend/index.html), but the error persists.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/ec84e8fb-5d4c-437b-bca9-5462ef63ed30
+- **Status:** BLOCKED
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC015 See an empty state before any network is uploaded
+- **Test Code:** [TC015_See_an_empty_state_before_any_network_is_uploaded.py](./TC015_See_an_empty_state_before_any_network_is_uploaded.py)
+- **Test Error:** TEST BLOCKED
+
+The feature could not be reached — the app root returns a directory listing instead of the application UI.
+
+Observations:
+- Navigated to http://localhost:5173 and saw "Directory listing for /" rather than the app UI.
+- The page lists repository files such as app.py, frontend/, and design.md, indicating a static directory listing is served.
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/61411cdb-edca-443f-8c7c-4e66296cf8c8/772a118e-9c76-471c-b610-24216c4b33f7
 - **Status:** BLOCKED
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
@@ -153,7 +232,7 @@ Observations:
 
 ## 3️⃣ Coverage & Matching Metrics
 
-- **10.00** of tests passed
+- **0.00** of tests passed
 
 | Requirement        | Total Tests | ✅ Passed | ❌ Failed  |
 |--------------------|-------------|-----------|------------|

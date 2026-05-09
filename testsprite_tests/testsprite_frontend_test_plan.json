@@ -1,9 +1,9 @@
 [
   {
     "id": "TC001",
-    "title": "Upload a valid network file successfully",
-    "description": "This verifies that a user can upload a valid EPANET input file and see the network load confirmation and file details.",
-    "category": "Network Upload",
+    "title": "Upload an EPANET model and reach a ready state",
+    "description": "This test verifies that a valid EPANET .inp file can be uploaded from the landing page and the network becomes ready for analysis.",
+    "category": "EPANET File Upload",
     "steps": [
       {
         "type": "action",
@@ -11,24 +11,28 @@
       },
       {
         "type": "action",
-        "description": "Upload a valid EPANET input file"
+        "description": "Upload a valid EPANET .inp file"
+      },
+      {
+        "type": "action",
+        "description": "Submit the upload"
       },
       {
         "type": "assertion",
-        "description": "Verify a successful file load confirmation is visible"
+        "description": "Verify the uploaded network is ready for analysis"
       },
       {
         "type": "assertion",
-        "description": "Verify loaded file details are displayed"
+        "description": "Verify a dashboard-ready state is displayed"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC002",
-    "title": "Complete a Hardy Cross analysis workflow",
-    "description": "This verifies that after loading a network file, the user can use the Hardy Cross tab and review the resulting hydraulic analysis outputs.",
-    "category": "Hydraulic Analysis",
+    "title": "Run Ultra Optimize and view the optimization results",
+    "description": "This test verifies that a user can select Ultra Optimize, provide a target PRV setting, run the workflow, and review the resulting diameter and pressure outputs.",
+    "category": "Ultra Optimize",
     "steps": [
       {
         "type": "action",
@@ -36,32 +40,40 @@
       },
       {
         "type": "action",
-        "description": "Upload a valid EPANET input file"
+        "description": "Upload a valid EPANET .inp file"
       },
       {
         "type": "action",
-        "description": "Open the Hardy Cross tab"
+        "description": "Submit the upload"
       },
       {
         "type": "action",
-        "description": "Run the Hardy Cross workflow"
+        "description": "Select the Ultra Optimize strategy"
+      },
+      {
+        "type": "action",
+        "description": "Fill in a valid Target PRV Setting"
+      },
+      {
+        "type": "action",
+        "description": "Run ultra optimization"
       },
       {
         "type": "assertion",
-        "description": "Verify hydraulic analysis results are displayed"
+        "description": "Verify optimization results are displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify the Hardy Cross output summary is displayed"
+        "description": "Verify diameter and pressure analysis results are displayed"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC003",
-    "title": "Run the auto-solver and see updated results",
-    "description": "This verifies that after loading a network file, the user can run Auto-Solver and view updated solver outputs after pipe diameter iteration.",
-    "category": "Hydraulic Analysis",
+    "title": "Switch to the topology visualizer after upload and inspect the schematic",
+    "description": "This test verifies that an uploaded network can be opened in the Network Topology Visualizer and the schematic is shown for the model.",
+    "category": "Network Topology Visualizer",
     "steps": [
       {
         "type": "action",
@@ -69,32 +81,32 @@
       },
       {
         "type": "action",
-        "description": "Upload a valid EPANET input file"
+        "description": "Upload a valid EPANET .inp file"
       },
       {
         "type": "action",
-        "description": "Open the Auto-Solver tab"
+        "description": "Submit the upload"
       },
       {
         "type": "action",
-        "description": "Run the auto-solver"
+        "description": "Select the Network Topology Visualizer strategy"
       },
       {
         "type": "assertion",
-        "description": "Verify updated solver results are displayed"
+        "description": "Verify the network schematic visualization is displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify the iterated pipe diameter outputs are displayed"
+        "description": "Verify the uploaded model is represented in the visualizer"
       }
     ],
     "priority": "High"
   },
   {
     "id": "TC004",
-    "title": "View network overview tables after upload",
-    "description": "This verifies that after loading a network file, the user can open Network Overview and inspect node and link statistics.",
-    "category": "Hydraulic Analysis",
+    "title": "Move between landing and dashboard without losing the uploaded model",
+    "description": "This test verifies that a user can switch between Landing and Dashboard views and keep the uploaded network available for further workflows.",
+    "category": "EPANET File Upload",
     "steps": [
       {
         "type": "action",
@@ -102,28 +114,36 @@
       },
       {
         "type": "action",
-        "description": "Upload a valid EPANET input file"
+        "description": "Upload a valid EPANET .inp file"
       },
       {
         "type": "action",
-        "description": "Open the Network Overview tab"
+        "description": "Submit the upload"
+      },
+      {
+        "type": "action",
+        "description": "Switch to the Landing view"
+      },
+      {
+        "type": "action",
+        "description": "Switch back to the Dashboard view"
       },
       {
         "type": "assertion",
-        "description": "Verify node statistics are displayed"
+        "description": "Verify the uploaded network is still available"
       },
       {
         "type": "assertion",
-        "description": "Verify link statistics are displayed"
+        "description": "Verify workflow selection remains available"
       }
     ],
-    "priority": "High"
+    "priority": "Medium"
   },
   {
     "id": "TC005",
-    "title": "Review pressure analysis results after upload",
-    "description": "This verifies that after loading a network file, the user can open Pressure Analysis and review pressure-related results.",
-    "category": "Hydraulic Analysis",
+    "title": "Run manual loop analysis after uploading a network",
+    "description": "This test verifies that a user can upload an EPANET network, select the manual loop analysis workflow, and see the Hardy Cross output rendered successfully.",
+    "category": "Manual Loop Analysis",
     "steps": [
       {
         "type": "action",
@@ -131,28 +151,28 @@
       },
       {
         "type": "action",
-        "description": "Upload a valid EPANET input file"
+        "description": "Upload a valid EPANET network file"
       },
       {
         "type": "action",
-        "description": "Open the Pressure Analysis tab"
+        "description": "Select the manual loop analysis strategy"
       },
       {
         "type": "assertion",
-        "description": "Verify pressure analysis results are displayed"
+        "description": "Verify the loop analysis output is displayed"
       },
       {
         "type": "assertion",
-        "description": "Verify a pressure-related visualization or table is displayed"
+        "description": "Verify the analysis results are visible"
       }
     ],
-    "priority": "High"
+    "priority": "Medium"
   },
   {
     "id": "TC006",
-    "title": "Return to solver tabs after upload",
-    "description": "This verifies that after a successful file load, the user can switch between the main analysis tabs without losing access to the loaded network.",
-    "category": "Hydraulic Analysis",
+    "title": "Reject a missing file selection before analysis",
+    "description": "This test verifies that trying to upload without selecting a file keeps analysis unavailable and shows a validation response.",
+    "category": "EPANET File Upload",
     "steps": [
       {
         "type": "action",
@@ -160,61 +180,57 @@
       },
       {
         "type": "action",
-        "description": "Upload a valid EPANET input file"
-      },
-      {
-        "type": "action",
-        "description": "Open the Network Overview tab"
-      },
-      {
-        "type": "action",
-        "description": "Open the Pressure Analysis tab"
-      },
-      {
-        "type": "action",
-        "description": "Open the Auto-Solver tab"
-      },
-      {
-        "type": "action",
-        "description": "Open the Hardy Cross tab"
+        "description": "Submit the upload without selecting a file"
       },
       {
         "type": "assertion",
-        "description": "Verify the loaded network remains available across tabs"
+        "description": "Verify an upload validation error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the network is not ready for analysis"
       }
     ],
     "priority": "Medium"
   },
   {
     "id": "TC007",
-    "title": "Reach the solver from the landing page",
-    "description": "This verifies that a user can open the app landing page and proceed into the solver interface from the start screen.",
-    "category": "Landing Page Navigation",
+    "title": "Open manual loop analysis from the dashboard workflow selector",
+    "description": "This test verifies that a user can upload a network and choose the manual loop analysis workflow from the main page after upload.",
+    "category": "Manual Loop Analysis",
     "steps": [
       {
         "type": "action",
         "description": "Navigate to /"
       },
       {
-        "type": "assertion",
-        "description": "Verify the landing page content is visible"
+        "type": "action",
+        "description": "Upload a valid EPANET network file"
       },
       {
         "type": "action",
-        "description": "Click the entry point to start using the solver"
+        "description": "Open the workflow selector"
+      },
+      {
+        "type": "action",
+        "description": "Select the manual loop analysis strategy"
       },
       {
         "type": "assertion",
-        "description": "Verify the solver interface is displayed"
+        "description": "Verify the loop analysis workflow is active"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the analysis output area is displayed"
       }
     ],
     "priority": "Medium"
   },
   {
     "id": "TC008",
-    "title": "Open the documentation from the landing page",
-    "description": "This verifies that a user can access documentation content from the landing page.",
-    "category": "Landing Page Navigation",
+    "title": "Switch from landing to dashboard after upload",
+    "description": "This test verifies that a user can move from the landing view into the dashboard after uploading a network and keep access to analysis workflows.",
+    "category": "Manual Loop Analysis",
     "steps": [
       {
         "type": "action",
@@ -222,41 +238,160 @@
       },
       {
         "type": "action",
-        "description": "Click the documentation link from the landing page"
+        "description": "Upload a valid EPANET network file"
+      },
+      {
+        "type": "action",
+        "description": "Select the dashboard view"
       },
       {
         "type": "assertion",
-        "description": "Verify documentation content is displayed"
+        "description": "Verify the dashboard is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the uploaded model remains available"
       }
     ],
     "priority": "Medium"
   },
   {
     "id": "TC009",
-    "title": "Show the empty state before any file is uploaded",
-    "description": "This verifies that the app shows an empty state or prompt before a network file has been uploaded.",
-    "category": "Network Upload",
+    "title": "Run Manual Loop Analysis and review the Hardy Cross output",
+    "description": "This test verifies that a user can open Manual Loop Analysis after uploading a model and inspect the loop calculation output.",
+    "category": "Manual Loop Analysis",
     "steps": [
       {
         "type": "action",
         "description": "Navigate to /"
       },
       {
-        "type": "assertion",
-        "description": "Verify an empty state prompt is visible"
+        "type": "action",
+        "description": "Upload a valid EPANET .inp file"
+      },
+      {
+        "type": "action",
+        "description": "Submit the upload"
+      },
+      {
+        "type": "action",
+        "description": "Select Manual Loop Analysis"
+      },
+      {
+        "type": "action",
+        "description": "Run the loop analysis"
       },
       {
         "type": "assertion",
-        "description": "Verify network analysis tabs are not yet available"
+        "description": "Verify Hardy Cross loop output is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify loop analysis results are visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC010",
+    "title": "Return to landing without losing the uploaded network",
+    "description": "This test verifies that a user can switch back to the landing view after uploading a network and still retain the model for later analysis.",
+    "category": "Manual Loop Analysis",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Upload a valid EPANET network file"
+      },
+      {
+        "type": "action",
+        "description": "Select the dashboard view"
+      },
+      {
+        "type": "action",
+        "description": "Switch back to the landing view"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the landing view is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the uploaded model remains available"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC011",
+    "title": "Review manual loop analysis for a reuploaded network",
+    "description": "This test verifies that a user can upload one network, replace it with another valid network, and still run manual loop analysis on the latest model.",
+    "category": "Manual Loop Analysis",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Upload a valid EPANET network file"
+      },
+      {
+        "type": "action",
+        "description": "Upload another valid EPANET network file"
+      },
+      {
+        "type": "action",
+        "description": "Select the manual loop analysis strategy"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the loop analysis output is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the results correspond to the current uploaded model"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC012",
+    "title": "Reject an unsupported file type",
+    "description": "This test verifies that a non-.inp file cannot be used to start analysis and the app keeps the upload state invalid.",
+    "category": "EPANET File Upload",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Upload a file with an unsupported type"
+      },
+      {
+        "type": "action",
+        "description": "Submit the upload"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a file type validation error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the network is not ready for analysis"
       }
     ],
     "priority": "Low"
   },
   {
-    "id": "TC010",
-    "title": "Handle unsupported file upload gracefully",
-    "description": "This verifies that uploading an unsupported file type does not load a network and shows an upload validation message.",
-    "category": "Network Upload",
+    "id": "TC013",
+    "title": "Require a network before manual loop analysis can run",
+    "description": "This test verifies that the manual loop analysis workflow cannot be executed until a valid network has been uploaded.",
+    "category": "Manual Loop Analysis",
     "steps": [
       {
         "type": "action",
@@ -264,15 +399,73 @@
       },
       {
         "type": "action",
-        "description": "Upload an unsupported file type"
+        "description": "Select the manual loop analysis strategy"
       },
       {
         "type": "assertion",
-        "description": "Verify an upload validation message is visible"
+        "description": "Verify a missing upload validation message is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify no network is loaded"
+        "description": "Verify the loop analysis output is not displayed"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC014",
+    "title": "Require a Target PRV Setting before running Ultra Optimize",
+    "description": "This test verifies that Ultra Optimize cannot proceed when the target PRV value is omitted and a validation message is shown instead.",
+    "category": "Ultra Optimize",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Upload a valid EPANET .inp file"
+      },
+      {
+        "type": "action",
+        "description": "Submit the upload"
+      },
+      {
+        "type": "action",
+        "description": "Select the Ultra Optimize strategy"
+      },
+      {
+        "type": "action",
+        "description": "Run ultra optimization without entering a target PRV setting"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a Target PRV Setting validation error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify optimization results are not displayed"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC015",
+    "title": "See an empty state before any network is uploaded",
+    "description": "This test verifies that the app shows an empty upload state and does not present analysis output before a network file is provided.",
+    "category": "Manual Loop Analysis",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an empty upload state is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify analysis output is not displayed"
       }
     ],
     "priority": "Low"
