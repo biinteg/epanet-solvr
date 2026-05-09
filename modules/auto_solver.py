@@ -17,6 +17,7 @@ def run_auto_solver(tmp_path):
     Runs the auto-solver and returns a dictionary with the results dataframe,
     summary metrics, and the path to the optimized INP file.
     """
+    d = None
     try:
         # Use wntr for reliable topology mapping
         wn = wntr.network.WaterNetworkModel(tmp_path)
