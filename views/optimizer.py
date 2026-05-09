@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 import streamlit as st
 import tempfile
 import os
@@ -32,67 +33,76 @@ def render():
                 Real-time analysis and automatic sizing of the water distribution network based on
                 Permen PU No. 18/PRT/M/2007 criteria.
             </p>
-            <div class="dashboard-grid">
-                <div class="status-card">
-                    <div class="status-label"><span class="material-symbols-outlined" style="color:#dc2626;">warning</span>Violations</div>
-                    <div class="status-value">0</div>
-                    <div class="status-caption">Detected after analysis</div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label"><span class="material-symbols-outlined" style="color:#0066cc;">autorenew</span>Iterations</div>
-                    <div class="status-value">Ready</div>
-                    <div class="status-caption">Select feature and upload file</div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label"><span class="material-symbols-outlined" style="color:#007f64;">speed</span>Target Criteria</div>
-                    <div class="status-value">10-80m</div>
-                    <div class="status-caption">Pressure, velocity, headloss</div>
-                </div>
-            </div>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <span class="material-symbols-outlined feature-icon">tune</span>
-                    <h3>Auto-Solver</h3>
-                    <p>Optimasi diameter pipa otomatis berbasis EPyT untuk memenuhi velocity dan headloss.</p>
-                </div>
-                <div class="feature-card">
-                    <span class="material-symbols-outlined feature-icon">valve</span>
-                    <h3>Pressure & Auto-PRV</h3>
-                    <p>Analisis tekanan node dan pencarian kombinasi Triple PRV terbaik berbasis WNTR.</p>
-                </div>
-                <div class="feature-card">
-                    <span class="material-symbols-outlined feature-icon">account_tree</span>
-                    <h3>Hardy Cross</h3>
-                    <p>Analisis loop jaringan menggunakan metode Hardy Cross untuk pemeriksaan debit.</p>
-                </div>
-            </div>
         </div>
     """)
 
-    feature_options = [
-        "Auto-Solver (Engine: EPyT)",
-        "Analisis Tekanan & Auto-PRV (Engine: WNTR)",
-        "Analisis Loop (Metode Hardy Cross)"
-    ]
-    menu = st.radio(
-        "Pilih fitur optimizer",
-        feature_options,
-        horizontal=True,
-        label_visibility="collapsed"
-    )
+    # Main Layout: Sidebar-like left column and Workspace right column
+    col_left, col_right = st.columns([1, 2.8], gap="large")
 
-    selected_engine = "EPyT" if "EPyT" in menu else "WNTR" if "WNTR" in menu else "Manual Loop"
-    st.html(f"""
-        <div class="dashboard-shell">
-            <div class="optimizer-workspace">
-                <div class="summary-card">
-                    <h3>Network Summary</h3>
-                    <div class="summary-row"><span>Selected Feature</span><strong>{menu.split(" (")[0]}</strong></div>
-                    <div class="summary-row"><span>Engine</span><strong>{selected_engine}</strong></div>
-                    <div class="summary-row"><span>Pressure</span><strong>10 - 80 m</strong></div>
-                    <div class="summary-row"><span>Velocity</span><strong>0.3 - 2.5 m/s</strong></div>
-                    <div class="summary-row"><span>Headloss</span><strong>&le; 10 m/km</strong></div>
+    with col_left:
+        st.markdown("### Select Feature")
+        
+        feature_options = [
+            "Auto-Solver (Engine: EPyT)",
+            "Pressure & Auto-PRV (Engine: WNTR)",
+            "Hardy Cross (Manual Loop)"
+        ]
+        
+        # Use a hidden radio but styled cards
+        # For simplicity and interactivity, we'll use a standard radio for now but on the left
+        menu = st.radio(
+            "Pilih fitur optimizer",
+            feature_options,
+            label_visibility="collapsed"
+        )
+        
+        selected_engine = "EPyT" if "EPyT" in menu else "WNTR" if "WNTR" in menu else "Manual Loop"
+        
+        st.html(f"""
+            <div class="feature-selection-container" style="margin-top: 20px;">
+                <div class="feature-selection-card {"selected" if "Auto-Solver" in menu else ""}">
+                    <span class="material-symbols-outlined card-icon">tune</span>
+                    <h4>Auto-Solver</h4>
+                    <p>Optimasi diameter pipa otomatis berbasis EPyT.</p>
                 </div>
+                <div class="feature-selection-card {"selected" if "Pressure" in menu else ""}">
+                    <span class="material-symbols-outlined card-icon">valve</span>
+                    <h4>Pressure & Auto-PRV</h4>
+                    <p>Analisis tekanan node & Triple PRV.</p>
+                </div>
+                <div class="feature-selection-card {"selected" if "Hardy Cross" in menu else ""}">
+                    <span class="material-symbols-outlined card-icon">account_tree</span>
+                    <h4>Hardy Cross</h4>
+                    <p>Analisis loop jaringan manual.</p>
+                </div>
+            </div>
+        """)
+        
+        st.markdown("---")
+        st.markdown("### Target Criteria")
+        st.html("""
+            <div class="feature-selection-container">
+                <div class="feature-selection-card" style="padding: 16px;">
+                    <span class="material-symbols-outlined card-icon" style="color:#007f64; margin-bottom:8px;">speed</span>
+                    <h4 style="font-size:14px;">Pressure</h4>
+                    <p style="font-size:12px;">10 - 80m</p>
+                </div>
+                <div class="feature-selection-card" style="padding: 16px;">
+                    <span class="material-symbols-outlined card-icon" style="color:#007f64; margin-bottom:8px;">water_drop</span>
+                    <h4 style="font-size:14px;">Velocity</h4>
+                    <p style="font-size:12px;">0.3 - 2.5 m/s</p>
+                </div>
+                <div class="feature-selection-card" style="padding: 16px;">
+                    <span class="material-symbols-outlined card-icon" style="color:#007f64; margin-bottom:8px;">timeline</span>
+                    <h4 style="font-size:14px;">Headloss</h4>
+                    <p style="font-size:12px;">Max 10 m/km</p>
+                </div>
+            </div>
+        """)
+
+    with col_right:
+        st.html(f"""
+            <div class="optimizer-workspace" style="margin-top: 0; grid-template-columns: 1fr;">
                 <div class="log-card">
                     <div class="log-head">
                         <h3><span class="material-symbols-outlined" style="color:#0066cc;">terminal</span> Live Optimization Log</h3>
@@ -107,52 +117,34 @@ def render():
                     </div>
                 </div>
             </div>
-        </div>
-    """)
-
-    st.html("""
-        <div class="upload-title">
-            <h1 class="hero-title">Upload Your Network</h1>
-            <p class="hero-subtitle">Drag and drop your .inp file here to begin the optimization process.</p>
-        </div>
-    """)
-
-    # Container for uploader
-    col1, col2, col3 = st.columns([1, 4, 1])
-    with col2:
-        uploaded_file = st.file_uploader("", type=["inp"])
-
-        st.html("""
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <span class="material-symbols-outlined" style="color: #007f64; font-size: 32px; font-variation-settings: 'FILL' 1;">speed</span>
-                    <h3 class="metric-title">Pressure</h3>
-                    <p class="metric-val">10 - 80m</p>
+            
+            <div style="margin-top: 32px;">
+                <div class="upload-title" style="text-align: left;">
+                    <h2 class="hero-title" style="font-size: 32px;">Upload Your Network</h2>
+                    <p class="hero-subtitle" style="margin: 0;">Drag and drop your .inp file here to begin.</p>
                 </div>
-                <div class="metric-card">
-                    <span class="material-symbols-outlined" style="color: #007f64; font-size: 32px; font-variation-settings: 'FILL' 1;">water_drop</span>
-                    <h3 class="metric-title">Velocity</h3>
-                    <p class="metric-val">0.3 - 2.5 m/s</p>
-                </div>
-                <div class="metric-card">
-                    <span class="material-symbols-outlined" style="color: #007f64; font-size: 32px; font-variation-settings: 'FILL' 1;">timeline</span>
-                    <h3 class="metric-title">Headloss</h3>
-                    <p class="metric-val">Max 10 m/km</p>
+                
+                <div style="margin-top: 24px;">
+                    uploaded_file = st.file_uploader("", type=["inp"])
                 </div>
             </div>
         """)
         
+        # We need to put the actual file uploader here outside the HTML block
+        uploaded_file = st.file_uploader("", type=["inp"], key="main_uploader", label_visibility="collapsed")
+        
         if uploaded_file is None:
-            st.info("Pilih fitur optimizer di atas, lalu unggah file .inp untuk memulai.")
+            st.info("Pilih fitur optimizer di kiri, lalu unggah file .inp untuk memulai.")
             st.session_state['run_solver'] = False
 
-        action_left, action_mid, action_right = st.columns([1.15, 1, 1.15])
+        action_mid = st.container()
         with action_mid:
             start_clicked = st.button(
                 "Start Optimization  →",
                 type="primary",
                 use_container_width=True,
                 disabled=uploaded_file is None,
+                key="start_opt_btn"
             )
 
         if uploaded_file is not None:
@@ -162,17 +154,17 @@ def render():
                 
         if st.session_state.get('run_solver', False):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
+                # pyrefly: ignore [missing-attribute]
                 tmp.write(uploaded_file.getvalue())
                 tmp_path = tmp.name
 
             try:
-                # Add a visually engaging loading/processing message (mimicking design)
                 with st.spinner(f"Optimizing Network... using {menu.split('(')[0].strip()}"):
-                    if menu == "Auto-Solver (Engine: EPyT)":
+                    if "Auto-Solver" in menu:
                         run_auto_solver(tmp_path)
-                    elif menu == "Analisis Tekanan & Auto-PRV (Engine: WNTR)":
+                    elif "Pressure" in menu:
                         run_pressure_analysis(tmp_path)
-                    elif menu == "Analisis Loop (Metode Hardy Cross)":
+                    elif "Hardy Cross" in menu:
                         run_hardy_cross(tmp_path)
 
             except Exception as e:
@@ -184,7 +176,7 @@ def render():
                         os.remove(tmp_path)
                     except:
                         pass
-                        
+
     st.html("""
         <div class="footer">
             <div class="footer-brand">EPANET Solver</div>
@@ -192,8 +184,6 @@ def render():
             <div class="footer-links">
                 <span>Regulatory Standards</span>
                 <span>Technical Support</span>
-                <span>Terms of Service</span>
-                <span>Privacy Policy</span>
             </div>
         </div>
     """)

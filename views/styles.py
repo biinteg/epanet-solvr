@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 import streamlit as st
 
 def inject_global_css():
@@ -408,6 +409,47 @@ def inject_global_css():
         }
         .feature-grid {
             margin: 16px 0 18px 0;
+        }
+        /* Feature Selection Sidebar Styles */
+        .feature-selection-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .feature-selection-card {
+            background-color: #f4f5f7;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .feature-selection-card:hover {
+            background-color: #eceef2;
+            transform: translateX(4px);
+        }
+        .feature-selection-card.selected {
+            background-color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0px 10px 30px rgba(0, 78, 159, 0.08);
+        }
+        .feature-selection-card .card-icon {
+            font-size: 32px;
+            color: var(--on-secondary-container);
+            margin-bottom: 12px;
+        }
+        .feature-selection-card h4 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+        .feature-selection-card p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--on-surface-variant);
+            line-height: 1.4;
         }
         .status-card,
         .feature-card,

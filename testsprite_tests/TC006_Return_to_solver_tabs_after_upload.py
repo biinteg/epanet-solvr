@@ -1,6 +1,8 @@
 import asyncio
 import re
+# pyrefly: ignore [missing-import]
 from playwright import async_api
+# pyrefly: ignore [missing-import]
 from playwright.async_api import expect
 
 async def run_test():

@@ -1,7 +1,12 @@
+# pyrefly: ignore [missing-import]
 import pandas as pd
+# pyrefly: ignore [missing-import]
 import matplotlib.pyplot as plt
+# pyrefly: ignore [missing-import]
 import numpy as np
+# pyrefly: ignore [missing-import]
 import wntr
+# pyrefly: ignore [missing-import]
 import streamlit as st
 
 MIN_PRESSURE_M = 10
@@ -85,6 +90,7 @@ def tampilkan_network(wn, tekanan_dict=None, judul="Visualisasi Jaringan"):
     
     # Colorbar atau legend
     if tekanan_dict is not None:
+        # pyrefly: ignore [missing-import]
         from matplotlib.lines import Line2D
         legend_elements = [
             Line2D([0], [0], marker='o', color='w', markerfacecolor='limegreen',

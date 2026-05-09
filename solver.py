@@ -1,5 +1,7 @@
 # solver.py
+# pyrefly: ignore [missing-import]
 import wntr
+# pyrefly: ignore [missing-import]
 from epyt import epanet
 
 def clean_inp_file(path):

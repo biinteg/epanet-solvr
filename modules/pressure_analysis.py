@@ -1,5 +1,8 @@
+# pyrefly: ignore [missing-import]
 import streamlit as st
+# pyrefly: ignore [missing-import]
 import wntr
+# pyrefly: ignore [missing-import]
 import pandas as pd
 from itertools import combinations
 from modules.helpers import (
@@ -147,6 +150,7 @@ def run_pressure_analysis(tmp_path):
                 compare = []
                 for node in wn.junction_name_list:
                     old_p = tekanan_awal[node]
+                    # pyrefly: ignore [unsupported-operation]
                     new_p = best_result[node]
                     p_tampil = new_p if (pd.notna(new_p) and new_p > -100) else 0
 
