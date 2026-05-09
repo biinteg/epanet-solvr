@@ -99,7 +99,7 @@ def run_pressure_analysis(tmp_path, target_prv=50.0, run_triple_prv=False):
                     new_p = best_result[node]
                     p_tampil = new_p if (pd.notna(new_p) and new_p > -100) else 0
                     status = "Terlalu Rendah" if p_tampil < MIN_PRESSURE_M else "Bahaya (Terlalu Tinggi)" if p_tampil > MAX_PRESSURE_M else "Aman"
-                    compare.append({"Node": node, "Tekanan Lama": round(tekanan_awal[node], 2), "Tekanan Baru": round(p_tampil, 2), "Status": status})
+                    compare.append({"Node": node, "Tekanan Sebelum": round(tekanan_awal[node], 2), "Tekanan Sesudah": round(p_tampil, 2), "Status": status})
                 
                 prv_temp = tmp_path.replace(".inp", "_PRV_temp.inp")
                 wntr.network.write_inpfile(best_network, prv_temp)
