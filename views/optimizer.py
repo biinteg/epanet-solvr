@@ -28,7 +28,7 @@ def render():
     if "log_history" not in st.session_state:
         st.session_state["log_history"] = []
         add_log("Initializing EPANET workspace...")
-        add_log("Ready for ultra-optimization.")
+        add_log("Ready for optimization.")
 
     st.html("""
         <div class="top-nav">
@@ -60,7 +60,12 @@ def render():
 
     with col_left:
         st.markdown("### Select Strategy")
-        feature_options = ["Ultra Optimize (All-in-One)", "Auto-Solver Only", "Pressure & Auto-PRV", "Hardy Cross"]
+        feature_options = [
+            "Auto-Solver Only", 
+            "Pressure & Auto-PRV", 
+            "Hardy Cross",
+            "Ultra Optimize (All-in-One)"
+        ]
         
         old_menu = st.session_state.get("last_selected_feature", "")
         menu = st.radio("Pilih fitur optimizer", feature_options, label_visibility="collapsed", key="feature_selector")

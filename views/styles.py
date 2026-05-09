@@ -538,6 +538,19 @@ def inject_global_css():
             color: var(--on-surface-variant) !important;
             line-height: 1.4;
         }
+
+        /* Card 4: Ultra Optimize */
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(4)::before {
+            content: '⚡';
+            font-size: 32px !important;
+            margin-bottom: 12px;
+        }
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(4)::after {
+            content: 'Optimasi diameter & Tekanan (All-in-One).';
+            font-size: 13px !important;
+            color: var(--on-surface-variant) !important;
+            line-height: 1.4;
+        }
         .status-card,
         .feature-card,
         .summary-card,
