@@ -72,11 +72,25 @@ def run_pressure_analysis(tmp_path, target_prv=50.0, run_triple_prv=False):
                                         diameter=pipe.diameter, valve_type="PRV", initial_setting=target_prv)
                     sim_test = wntr.sim.EpanetSimulator(wn_test)
                     res = sim_test.run_sim()
-                    tekanan = res.node["pressure"].iloc[0]
-                    if any(pd.isna(tekanan[n]) or tekanan[n] < -100 for n in wn_test.junction_name_list): continue
+                    tekanan_series = res.node["pressure"]
+                    # Use the maximum pressure observed at each node across the simulation time steps
+                    tekanan = tekanan_series.max()
+                    # Skip unrealistic results where any node pressure is NaN or excessively low
+                    if any(pd.isna(tekanan[n]) or tekanan[n] < -100 for n in wn_test.junction_name_list):
+                        continue
+                    # Count nodes that satisfy the safe pressure range
                     aman = sum(1 for n in wn_test.junction_name_list if MIN_PRESSURE_M <= tekanan[n] <= MAX_PRESSURE_M)
-                    if aman > best_score:
-                        best_score = aman; best_combo = combo; best_result = tekanan; best_network = wn_test
+                    # Original scoring only considered count of safe nodes.
+                    # Introduce a penalty for nodes exceeding the maximum safe pressure to prefer solutions with fewer high‑pressure nodes.
+                    high_count = sum(1 for n in wn_test.junction_name_list if tekanan[n] > MAX_PRESSURE_M)
+                    low_count = sum(1 for n in wn_test.junction_name_list if tekanan[n] < MIN_PRESSURE_M)
+                    # Composite score: safe nodes minus weighted penalties for high/low pressures
+                    score = aman - 0.5 * high_count - 0.5 * low_count
+                    if score > best_score:
+                        best_score = score
+                        best_combo = combo
+                        best_result = tekanan
+                        best_network = wn_test
                 except: continue
 
             if best_combo:
@@ -101,11 +115,16 @@ def run_pressure_analysis(tmp_path, target_prv=50.0, run_triple_prv=False):
                 
                 output["prv_results"] = {
                     "best_combo": best_combo,
-                    "best_score": best_score,
-                    "df_compare": pd.DataFrame(compare),
-                    "best_network": best_network,
-                    "best_result": best_result,
-                    "inp_path": new_inp
+                     "best_score": best_score,
+                     "df_compare": pd.DataFrame(compare),
+                     "best_network": best_network,
+                     "best_result": best_result,
+                     "inp_path": new_inp,
+                     "score_details": {
+                         "safe_nodes": aman,
+                         "high_pressure_nodes": high_count,
+                         "low_pressure_nodes": low_count
+                     }
                 }
     
     return output
