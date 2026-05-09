@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from views import styles
 from modules.auto_solver import run_auto_solver
 from modules.pressure_analysis import run_pressure_analysis
-from modules.hardy_cross import run_hardy_cross
+from modules.hardy_cross import run_hard_cross
 from modules.helpers import warnai_status_solver, warnai_status_tekanan, tampilkan_network
 
 def add_log(msg, type='info'):
@@ -16,6 +16,7 @@ def add_log(msg, type='info'):
     local_now = datetime.utcnow() + timedelta(hours=7)
     timestamp = local_now.strftime("%H:%M:%S")
     color = "#66d39b" if type == 'success' else "#ff4b4b" if type == 'error' else "#cfd6d4"
+    if type == 'ultra': color = "#bb86fc" # Purple for ultra
     log_entry = f'<span style="color: {color};">{timestamp} {msg}</span>'
     st.session_state["log_history"].append(log_entry)
     if len(st.session_state["log_history"]) > 15:
@@ -27,7 +28,7 @@ def render():
     if "log_history" not in st.session_state:
         st.session_state["log_history"] = []
         add_log("Initializing EPANET workspace...")
-        add_log("Ready for network upload.")
+        add_log("Ready for ultra-optimization.")
 
     st.html("""
         <div class="top-nav">
@@ -46,7 +47,7 @@ def render():
 
     st.html("""
         <div class="dashboard-shell">
-            <div class="dashboard-kicker">Optimizing network dashboard</div>
+            <div class="dashboard-kicker">Multi-stage network optimization</div>
             <h1 class="dashboard-title">Optimization Dashboard</h1>
             <p class="dashboard-subtitle">
                 Real-time analysis and automatic sizing of the water distribution network based on
@@ -58,19 +59,18 @@ def render():
     col_left, col_right = st.columns([1, 2.8], gap="large")
 
     with col_left:
-        st.markdown("### Select Feature")
-        feature_options = ["Auto-Solver", "Pressure & Auto-PRV", "Hardy Cross"]
+        st.markdown("### Select Strategy")
+        feature_options = ["Ultra Optimize (All-in-One)", "Auto-Solver Only", "Pressure & Auto-PRV", "Hardy Cross"]
         
         old_menu = st.session_state.get("last_selected_feature", "")
         menu = st.radio("Pilih fitur optimizer", feature_options, label_visibility="collapsed", key="feature_selector")
         
         if menu != old_menu:
             st.session_state["last_selected_feature"] = menu
-            add_log(f"Feature selected: {menu}")
-            if "solver_results" in st.session_state:
-                del st.session_state["solver_results"]
+            add_log(f"Strategy selected: {menu}")
+            if "solver_results" in st.session_state: del st.session_state["solver_results"]
         
-        selected_engine = "EPyT" if "Auto-Solver" in menu else "WNTR" if "Pressure" in menu else "Manual Loop"
+        selected_engine = "Multi-Core" if "Ultra" in menu else "EPyT" if "Auto" in menu else "WNTR"
         
         st.markdown("---")
         st.markdown("### Target Criteria")
@@ -125,48 +125,59 @@ def render():
             if "file_logged" not in st.session_state or st.session_state.file_logged != uploaded_file.name:
                 add_log(f"File uploaded: {uploaded_file.name}", 'success')
                 st.session_state.file_logged = uploaded_file.name
-                if "solver_results" in st.session_state:
-                    del st.session_state["solver_results"]
+                if "solver_results" in st.session_state: del st.session_state["solver_results"]
 
-        # Feature-specific parameters
+        # Settings for Ultra or Pressure
         target_prv = 50.0
-        if "Pressure" in menu:
+        if "Pressure" in menu or "Ultra" in menu:
             st.markdown("---")
-            st.markdown("### Pressure Analysis Settings")
+            st.markdown("### Pressure Control Settings")
             target_prv = st.number_input("Target Tekanan PRV (m)", value=50.0, min_value=10.0, max_value=100.0)
-            run_triple = st.checkbox("Cari Kombinasi Triple PRV (Bisa memakan waktu lama)", value=False)
-        else:
-            run_triple = False
 
         col_btn1, col_btn2 = st.columns([2, 1])
         with col_btn1:
-            start_clicked = st.button("Start Analysis  →", type="primary", use_container_width=True, disabled=uploaded_file is None)
+            btn_text = "ULTRA OPTIMIZE  ⚡" if "Ultra" in menu else "Start Analysis  →"
+            start_clicked = st.button(btn_text, type="primary", use_container_width=True, disabled=uploaded_file is None)
         with col_btn2:
-            if st.button("Clear Dashboard", use_container_width=True):
+            if st.button("Clear Workspace", use_container_width=True):
                 if "solver_results" in st.session_state: del st.session_state["solver_results"]
                 st.session_state["log_history"] = []
                 add_log("Workspace reset.")
                 st.rerun()
 
         if start_clicked:
-            add_log(f"Initiating {menu} Engine...", 'info')
+            add_log(f"Starting {menu} Process...", 'ultra' if "Ultra" in menu else 'info')
             with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
                 # pyrefly: ignore [missing-attribute]
                 tmp.write(uploaded_file.getvalue())
                 tmp_path = tmp.name
 
             try:
-                add_log("Preprocessing network data...")
-                with st.spinner(f"Running {menu}..."):
-                    if "Auto-Solver" in menu:
-                        results = run_auto_solver(tmp_path)
+                results_container = {}
+                with st.spinner(f"Processing..."):
+                    if "Ultra" in menu:
+                        # STAGE 1: Auto Solver
+                        add_log("STAGE 1: Optimizing Pipe Diameters...", 'info')
+                        res1 = run_auto_solver(tmp_path)
+                        # STAGE 2: Pressure Analysis on optimized diameters
+                        add_log("STAGE 2: Stabilizing Pressure & PRV Placement...", 'info')
+                        res2 = run_pressure_analysis(res1["inp_file_path"], target_prv=target_prv, run_triple_prv=True)
+                        
+                        results_container = {
+                            "type": "ultra",
+                            "stage1": res1,
+                            "stage2": res2,
+                            "final_inp": res2["prv_results"]["inp_path"] if "prv_results" in res2 else res1["inp_file_path"]
+                        }
+                        add_log("ULTRA OPTIMIZATION COMPLETE!", 'success')
+                    elif "Auto-Solver" in menu:
+                        results_container = run_auto_solver(tmp_path)
                     elif "Pressure" in menu:
-                        results = run_pressure_analysis(tmp_path, target_prv=target_prv, run_triple_prv=run_triple)
+                        results_container = run_pressure_analysis(tmp_path, target_prv=target_prv, run_triple_prv=True)
                     elif "Hardy Cross" in menu:
-                        results = run_hardy_cross(tmp_path)
+                        results_container = run_hardy_cross(tmp_path)
                     
-                    st.session_state["solver_results"] = results
-                    add_log("Analysis successfully completed.", 'success')
+                    st.session_state["solver_results"] = results_container
                 st.rerun()
 
             except Exception as e:
@@ -182,42 +193,41 @@ def render():
             res = st.session_state["solver_results"]
             st.markdown("---")
             
-            if res["type"] == "pressure":
-                st.markdown("### 📊 Diagnosis Tekanan Awal")
-                m1, m2, m3 = st.columns(3)
-                m1.metric("Terlalu Rendah", res["metrics_awal"]["low"])
-                m2.metric("Terlalu Tinggi", res["metrics_awal"]["high"])
-                m3.metric("Total Junction", res["metrics_awal"]["total"])
-                st.dataframe(res["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True, height=300)
-                tampilkan_network(res["wn_initial"], res["tekanan_awal"], "Visualisasi Tekanan Awal")
-                
-                if "prv_results" in res:
-                    st.markdown("### 🛠️ Hasil Optimasi Triple PRV")
-                    st.success(f"Kombinasi Terbaik: **{', '.join(res['prv_results']['best_combo'])}**")
-                    st.metric("Node Aman", f"{res['prv_results']['best_score']}/{res['metrics_awal']['total']}")
-                    st.dataframe(res["prv_results"]["df_compare"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True, height=300)
-                    tampilkan_network(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Visualisasi Setelah Triple PRV")
-                    with open(res["prv_results"]["inp_path"], "rb") as f:
-                        st.download_button("📥 Download Triple PRV Network (.inp)", data=f, file_name="Triple_PRV_Result.inp", mime="text/plain", use_container_width=True)
+            if res["type"] == "ultra":
+                st.success("⚡ Ultra Optimization Finished. Combined Auto-Diameter and Triple PRV Stabilization.")
+                tabs = st.tabs(["Diameters (Stage 1)", "Pressure (Stage 2)", "Final Network"])
+                with tabs[0]:
+                    st.markdown("### Hasil Optimasi Diameter")
+                    st.dataframe(res["stage1"]["df"].style.map(warnai_status_solver, subset=["Status Optimasi"]), use_container_width=True)
+                with tabs[1]:
+                    st.markdown("### Perbandingan Tekanan Final")
+                    if "prv_results" in res["stage2"]:
+                        st.success(f"PRV installed on: {', '.join(res['stage2']['prv_results']['best_combo'])}")
+                        st.dataframe(res["stage2"]["prv_results"]["df_compare"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                    else:
+                        st.dataframe(res["stage2"]["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                with tabs[2]:
+                    st.markdown("### Visualisasi Akhir")
+                    final_network = res["stage2"]["prv_results"]["best_network"] if "prv_results" in res["stage2"] else res["stage2"]["wn_initial"]
+                    final_pressures = res["stage2"]["prv_results"]["best_result"] if "prv_results" in res["stage2"] else res["stage2"]["tekanan_awal"]
+                    tampilkan_network(final_network, final_pressures, "Network Topology After Ultra Optimization")
+                    
+                with open(res["final_inp"], "rb") as f:
+                    st.download_button("📥 DOWNLOAD ULTRA OPTIMIZED NETWORK (.inp)", data=f, file_name="Ultra_Optimized_Result.inp", mime="text/plain", use_container_width=True)
 
-            elif res["type"] == "hardy_cross":
-                st.markdown("### 📊 Hasil Hardy Cross")
-                st.info(f"Loop ditemukan: {res['loops_found']} | Iterasi: {res['iterations']} | Status: {'Konvergen' if res['converged'] else 'Tidak Konvergen'}")
-                c1, c2 = st.columns(2)
-                with c1: st.markdown("**Sejarah Koreksi ΔQ**"); st.dataframe(res["history_df"], height=300)
-                with c2: st.markdown("**Debit Final (L/s)**"); st.dataframe(res["final_df"], height=300)
-                # Note: Visualization for Hardy Cross uses Matplotlib, which might need special handling if it fails
-                st.info("Visualisasi aliran tersedia di backend (matplotlib).")
+            elif res["type"] == "pressure":
+                st.markdown("### 📊 Diagnosis Tekanan")
+                st.dataframe(res["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                if "prv_results" in res:
+                    st.success(f"Best PRV Combo: {', '.join(res['prv_results']['best_combo'])}")
+                    with open(res["prv_results"]["inp_path"], "rb") as f:
+                        st.download_button("📥 Download Triple PRV Result", data=f, file_name="PRV_Result.inp", use_container_width=True)
 
             elif res["type"] == "auto_solver":
                 st.markdown("### 📊 Ringkasan Optimasi Diameter")
-                m1, m2, m3 = st.columns(3)
-                m1.metric("Total Pipa", res["metrics"]["total"])
-                m2.metric("Dimodifikasi", res["metrics"]["changed"])
-                m3.metric("Kepatuhan PU", f"{res['metrics']['compliant']}/{res['metrics']['total']}")
-                st.dataframe(res["df"].style.map(warnai_status_solver, subset=["Status Optimasi"]), use_container_width=True, height=300)
+                st.dataframe(res["df"].style.map(warnai_status_solver, subset=["Status Optimasi"]), use_container_width=True)
                 with open(res["inp_file_path"], "rb") as f:
-                    st.download_button("📥 Download Optimized Network (.inp)", data=f, file_name="Optimized_Network.inp", mime="text/plain", use_container_width=True)
+                    st.download_button("📥 Download Optimized Network", data=f, file_name="Diameter_Optimized.inp", use_container_width=True)
 
     st.html("""
         <div class="footer">
