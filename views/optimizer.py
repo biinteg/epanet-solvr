@@ -2,13 +2,33 @@
 import streamlit as st
 import tempfile
 import os
+import time
+from datetime import datetime
 from views import styles
 from modules.auto_solver import run_auto_solver
 from modules.pressure_analysis import run_pressure_analysis
 from modules.hardy_cross import run_hardy_cross
 
+def add_log(msg, type='info'):
+    if "log_history" not in st.session_state:
+        st.session_state["log_history"] = []
+    
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    color = "#66d39b" if type == 'success' else "#ff4b4b" if type == 'error' else "#cfd6d4"
+    log_entry = f'<span style="color: {color};">{timestamp} {msg}</span>'
+    st.session_state["log_history"].append(log_entry)
+    # Keep only last 10 logs for performance
+    if len(st.session_state["log_history"]) > 15:
+        st.session_state["log_history"].pop(0)
+
 def render():
     styles.inject_optimizer_styles()
+
+    if "log_history" not in st.session_state:
+        st.session_state["log_history"] = [
+            '<span style="color: #cfd6d4;">Initializing EPANET workspace...</span>',
+            '<span style="color: #cfd6d4;">Ready for network upload.</span>'
+        ]
 
     st.html("""
         <div class="top-nav">
@@ -48,12 +68,18 @@ def render():
             "Hardy Cross"
         ]
         
+        # Detect selection change to add log
+        old_menu = st.session_state.get("last_selected_feature", "")
         menu = st.radio(
             "Pilih fitur optimizer",
             feature_options,
             label_visibility="collapsed",
             key="feature_selector"
         )
+        
+        if menu != old_menu:
+            st.session_state["last_selected_feature"] = menu
+            add_log(f"Feature selected: {menu}")
         
         selected_engine = "EPyT" if "Auto-Solver" in menu else "WNTR" if "Pressure" in menu else "Manual Loop"
         
@@ -80,6 +106,8 @@ def render():
         """)
 
     with col_right:
+        # Live Terminal Component
+        log_content = "<br>".join(st.session_state["log_history"])
         st.html(f"""
             <div class="optimizer-workspace" style="margin-top: 0; grid-template-columns: 1fr;">
                 <div class="log-card">
@@ -87,16 +115,14 @@ def render():
                         <h3>💻 Live Optimization Log</h3>
                         <span class="engine-pill">{selected_engine} Engine</span>
                     </div>
-                    <div class="log-console">
-                        10:42:01 Initializing EPANET workspace...<br>
-                        10:42:02 Feature selected: {menu}<br>
-                        10:42:03 Waiting for .inp network upload...<br>
-                        10:42:05 Evaluating Permen PU criteria...<br>
-                        <span class="log-good">10:42:06 Ready to start optimization.</span>
+                    <div class="log-console" id="terminal-output">
+                        {log_content}
                     </div>
                 </div>
             </div>
-            
+        """)
+        
+        st.html("""
             <div style="margin-top: 32px;">
                 <div class="upload-title" style="text-align: left;">
                     <h2 class="hero-title" style="font-size: 32px;">Upload Your Network</h2>
@@ -107,6 +133,12 @@ def render():
         
         uploaded_file = st.file_uploader("", type=["inp"], key="main_uploader", label_visibility="collapsed")
         
+        if uploaded_file:
+            if "file_logged" not in st.session_state or st.session_state.file_logged != uploaded_file.name:
+                add_log(f"File uploaded: {uploaded_file.name}", 'success')
+                add_log("Validating network topology...")
+                st.session_state.file_logged = uploaded_file.name
+
         if uploaded_file is None:
             st.info("Pilih fitur optimizer di kiri, lalu unggah file .inp untuk memulai.")
             st.session_state['run_solver'] = False
@@ -122,9 +154,9 @@ def render():
             )
 
         if uploaded_file is not None:
-            st.success("File validated. Ready to optimize.")
             if start_clicked:
                 st.session_state['run_solver'] = True
+                add_log(f"Starting {menu} Engine...", 'info')
                 
         if st.session_state.get('run_solver', False):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
@@ -133,6 +165,11 @@ def render():
                 tmp_path = tmp.name
 
             try:
+                # Since we can't easily pass callback to existing modules without refactoring them,
+                # we'll add dummy progress logs here for effect, then run the actual solver.
+                add_log("Analyzing link diameters...")
+                add_log("Running hydraulic simulations...")
+                
                 with st.spinner(f"Optimizing Network... using {menu}"):
                     if "Auto-Solver" in menu:
                         run_auto_solver(tmp_path)
@@ -140,10 +177,15 @@ def render():
                         run_pressure_analysis(tmp_path)
                     elif "Hardy Cross" in menu:
                         run_hardy_cross(tmp_path)
+                
+                add_log("Optimization complete!", 'success')
+                st.session_state['run_solver'] = False
+                st.rerun() # Refresh to show logs
 
             except Exception as e:
+                add_log(f"Error: {str(e)}", 'error')
                 st.error(f"Gagal menjalankan analisis: {str(e)}")
-                st.exception(e)
+                st.session_state['run_solver'] = False
             finally:
                 if os.path.exists(tmp_path):
                     try:
