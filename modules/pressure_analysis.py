@@ -86,8 +86,17 @@ def run_pressure_analysis(tmp_path, target_prv=50.0, run_triple_prv=False):
                     status = "Terlalu Rendah" if p_tampil < MIN_PRESSURE_M else "Bahaya (Terlalu Tinggi)" if p_tampil > MAX_PRESSURE_M else "Aman"
                     compare.append({"Node": node, "Tekanan Lama": round(tekanan_awal[node], 2), "Tekanan Baru": round(p_tampil, 2), "Status": status})
                 
+                prv_temp = tmp_path.replace(".inp", "_PRV_temp.inp")
+                wntr.network.write_inpfile(best_network, prv_temp)
+                
+                # Rename links to descriptive (A-B)
+                # pyrefly: ignore [missing-import]
+                from modules.helpers import rename_inp_links
                 new_inp = tmp_path.replace(".inp", "_TriplePRV.inp")
-                wntr.network.write_inpfile(best_network, new_inp)
+                if rename_inp_links(prv_temp, new_inp):
+                    if os.path.exists(prv_temp): os.remove(prv_temp)
+                else:
+                    new_inp = prv_temp
                 
                 output["prv_results"] = {
                     "best_combo": best_combo,

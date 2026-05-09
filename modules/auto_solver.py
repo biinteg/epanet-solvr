@@ -109,8 +109,17 @@ def run_auto_solver(tmp_path):
         df = pd.DataFrame(hasil)
         
         # Save optimized INP
-        new_inp = tmp_path.replace(".inp", "_optimized.inp")
-        d.saveInputFile(new_inp)
+        final_temp = tmp_path.replace(".inp", "_optimized.inp")
+        d.saveInputFile(final_temp)
+        
+        # Rename links to descriptive (A-B)
+        # pyrefly: ignore [missing-import]
+        from modules.helpers import rename_inp_links
+        new_inp = tmp_path.replace(".inp", "_final.inp")
+        if rename_inp_links(final_temp, new_inp):
+            if os.path.exists(final_temp): os.remove(final_temp)
+        else:
+            new_inp = final_temp # Fallback
 
         # Return results to view
         return {

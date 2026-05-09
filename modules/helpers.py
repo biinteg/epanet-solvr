@@ -154,3 +154,62 @@ def tampilkan_skema_jaringan(wn, judul="Skema Jaringan"):
     plt.tight_layout()
     st.pyplot(fig)
     plt.close(fig)
+
+def rename_inp_links(inp_path, out_path):
+    """
+    Mengubah ID pipa dari p1, p2 menjadi format deskriptif (A-B) di dalam file .inp.
+    Menggunakan wntr untuk mapping dan manipulasi teks yang aman.
+    """
+    try:
+        wn = wntr.network.WaterNetworkModel(inp_path)
+        mapping = {}
+        
+        # Buat mapping ID lama -> ID baru (Format: Node1_Node2)
+        for name, link in wn.links():
+            # Hindari karakter terlarang di EPANET
+            s = str(link.start_node).replace(" ", "_").replace(";", "")
+            e = str(link.end_node).replace(" ", "_").replace(";", "")
+            new_id = f"{s}-{e}"
+            # Jika ID terlalu panjang, potong (limit EPANET ID biasanya 31-255 tergantung versi)
+            if len(new_id) > 31:
+                new_id = new_id[:31]
+            mapping[name] = new_id
+
+        with open(inp_path, 'r') as f:
+            lines = f.readlines()
+
+        new_lines = []
+        current_section = ""
+        
+        # Daftar section yang mengandung ID Link
+        link_sections = ["[PIPES]", "[PUMPS]", "[VALVES]", "[STATUS]", "[CONTROLS]", "[RULES]", "[REPORT]", "[TAGS]", "[VERTICES]"]
+
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                current_section = stripped.upper()
+                new_lines.append(line)
+                continue
+            
+            # Abaikan komentar atau baris kosong
+            if not stripped or stripped.startswith(";"):
+                new_lines.append(line)
+                continue
+
+            # Proses penggantian ID jika berada di section yang relevan
+            if current_section in link_sections:
+                parts = line.split()
+                if parts and parts[0] in mapping:
+                    old_id = parts[0]
+                    new_id = mapping[old_id]
+                    # Ganti hanya kata pertama (ID) agar kolom lain tetap terjaga
+                    line = line.replace(old_id, new_id, 1)
+            
+            new_lines.append(line)
+
+        with open(out_path, 'w') as f:
+            f.writelines(new_lines)
+        return True
+    except Exception as e:
+        print(f"Error renaming INP: {e}")
+        return False
