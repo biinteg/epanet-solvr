@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import tempfile
 import os
 
@@ -371,6 +371,156 @@ st.html("""
         border-radius: 9999px !important;
         box-shadow: 0px 10px 24px rgba(0, 78, 159, 0.28) !important;
     }
+    .dashboard-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+    .dashboard-kicker {
+        color: var(--primary);
+        font-size: 13px;
+        font-weight: 700;
+        margin: 8px 0 18px 0;
+    }
+    .dashboard-title {
+        font-size: 42px;
+        font-weight: 800;
+        color: var(--on-surface);
+        margin: 0 0 12px 0;
+        letter-spacing: 0;
+    }
+    .dashboard-subtitle {
+        max-width: 680px;
+        color: var(--on-surface-variant);
+        font-size: 17px;
+        line-height: 1.5;
+        margin: 0 0 44px 0;
+    }
+    .dashboard-grid,
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+    }
+    .dashboard-grid {
+        margin-bottom: 32px;
+    }
+    .feature-grid {
+        margin: 16px 0 18px 0;
+    }
+    .status-card,
+    .feature-card,
+    .summary-card,
+    .log-card {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0px 18px 50px rgba(21, 37, 65, 0.06);
+    }
+    .status-card {
+        padding: 24px;
+        min-height: 120px;
+    }
+    .status-label {
+        color: var(--on-surface-variant);
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    .status-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--on-surface);
+        margin-bottom: 6px;
+    }
+    .status-caption {
+        color: var(--on-surface-variant);
+        font-size: 14px;
+    }
+    .feature-card {
+        padding: 24px;
+        min-height: 150px;
+        border: 1px solid #eef1f5;
+    }
+    .feature-card h3 {
+        margin: 10px 0 8px 0;
+        font-size: 19px;
+        color: var(--on-surface);
+    }
+    .feature-card p {
+        margin: 0;
+        color: var(--on-surface-variant);
+        font-size: 14px;
+        line-height: 1.45;
+    }
+    .feature-icon {
+        color: var(--primary);
+        font-size: 28px;
+    }
+    .optimizer-workspace {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 22px;
+        margin-top: 28px;
+    }
+    .summary-card {
+        padding: 24px;
+    }
+    .summary-card h3,
+    .log-card h3 {
+        margin: 0 0 18px 0;
+        font-size: 24px;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #e7e9ee;
+        padding: 13px 0;
+        color: var(--on-surface-variant);
+        font-size: 14px;
+    }
+    .summary-row strong {
+        color: var(--on-surface);
+        text-align: right;
+    }
+    .log-card {
+        overflow: hidden;
+    }
+    .log-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px;
+    }
+    .engine-pill {
+        background: #f4f5f7;
+        border-radius: 6px;
+        color: var(--on-surface-variant);
+        font-size: 12px;
+        font-weight: 800;
+        padding: 8px 12px;
+    }
+    .log-console {
+        background: #2f3332;
+        color: #cfd6d4;
+        font-family: Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.8;
+        min-height: 260px;
+        padding: 24px;
+    }
+    .log-good {
+        color: #66d39b;
+        font-weight: 700;
+    }
+    @media (max-width: 900px) {
+        .dashboard-grid,
+        .feature-grid,
+        .optimizer-workspace {
+            grid-template-columns: 1fr;
+        }
+    }
     @media (max-width: 760px) {
         .top-nav, .footer {
             flex-direction: column;
@@ -392,12 +542,15 @@ st.html("""
 
 if "app_started" not in st.session_state:
     st.session_state["app_started"] = False
+if "run_solver" not in st.session_state:
+    st.session_state["run_solver"] = False
 
 page_param = st.query_params.get("page", "")
 if page_param == "optimizer":
     st.session_state["app_started"] = True
 elif page_param == "home":
     st.session_state["app_started"] = False
+    st.session_state["run_solver"] = False
 
 if not st.session_state["app_started"]:
     # =====================================================
@@ -453,6 +606,7 @@ if not st.session_state["app_started"]:
         with c1:
             if st.button("Get Started", type="primary", use_container_width=True):
                 st.session_state["app_started"] = True
+                st.query_params["page"] = "optimizer"
                 st.rerun()
         with c2:
             st.button("View Documentation", use_container_width=True)
@@ -512,6 +666,10 @@ else:
     # MAIN APP (UPLOADER & SOLVERS)
     # =====================================================
     st.html("""
+        <style>
+        [data-testid="collapsedControl"] {display: none;}
+        section[data-testid="stSidebar"] {display: none !important;}
+        </style>
         <div class="top-nav">
             <div class="nav-brand">EPANET Solver</div>
             <div class="nav-links">
@@ -526,25 +684,91 @@ else:
         </div>
     """)
 
-    # Move sidebar navigation here
-    st.sidebar.title("EPANET Solver Settings")
-    
-    menu = st.sidebar.radio(
-        "Navigasi Modul:",
-        [
-            "Auto-Solver (Engine: EPyT)",
-            "Analisis Tekanan & Auto-PRV (Engine: WNTR)",
-            "Analisis Loop (Metode Hardy Cross)"
-        ]
+    st.html("""
+        <div class="dashboard-shell">
+            <div class="dashboard-kicker">Optimizing network dashboard</div>
+            <h1 class="dashboard-title">Optimization Dashboard</h1>
+            <p class="dashboard-subtitle">
+                Real-time analysis and automatic sizing of the water distribution network based on
+                Permen PU No. 18/PRT/M/2007 criteria.
+            </p>
+            <div class="dashboard-grid">
+                <div class="status-card">
+                    <div class="status-label"><span class="material-symbols-outlined" style="color:#dc2626;">warning</span>Violations</div>
+                    <div class="status-value">0</div>
+                    <div class="status-caption">Detected after analysis</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label"><span class="material-symbols-outlined" style="color:#0066cc;">autorenew</span>Iterations</div>
+                    <div class="status-value">Ready</div>
+                    <div class="status-caption">Select feature and upload file</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label"><span class="material-symbols-outlined" style="color:#007f64;">speed</span>Target Criteria</div>
+                    <div class="status-value">10-80m</div>
+                    <div class="status-caption">Pressure, velocity, headloss</div>
+                </div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <span class="material-symbols-outlined feature-icon">tune</span>
+                    <h3>Auto-Solver</h3>
+                    <p>Optimasi diameter pipa otomatis berbasis EPyT untuk memenuhi velocity dan headloss.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="material-symbols-outlined feature-icon">valve</span>
+                    <h3>Pressure & Auto-PRV</h3>
+                    <p>Analisis tekanan node dan pencarian kombinasi Triple PRV terbaik berbasis WNTR.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="material-symbols-outlined feature-icon">account_tree</span>
+                    <h3>Hardy Cross</h3>
+                    <p>Analisis loop jaringan menggunakan metode Hardy Cross untuk pemeriksaan debit.</p>
+                </div>
+            </div>
+        </div>
+    """)
+
+    feature_options = [
+        "Auto-Solver (Engine: EPyT)",
+        "Analisis Tekanan & Auto-PRV (Engine: WNTR)",
+        "Analisis Loop (Metode Hardy Cross)"
+    ]
+    menu = st.radio(
+        "Pilih fitur optimizer",
+        feature_options,
+        horizontal=True,
+        label_visibility="collapsed"
     )
 
-    st.sidebar.markdown("---")
-    
-    if st.sidebar.button("← Kembali ke Beranda"):
-        st.session_state["app_started"] = False
-        st.session_state["run_solver"] = False
-        st.query_params["page"] = "home"
-        st.rerun()
+    selected_engine = "EPyT" if "EPyT" in menu else "WNTR" if "WNTR" in menu else "Manual Loop"
+    st.html(f"""
+        <div class="dashboard-shell">
+            <div class="optimizer-workspace">
+                <div class="summary-card">
+                    <h3>Network Summary</h3>
+                    <div class="summary-row"><span>Selected Feature</span><strong>{menu.split(" (")[0]}</strong></div>
+                    <div class="summary-row"><span>Engine</span><strong>{selected_engine}</strong></div>
+                    <div class="summary-row"><span>Pressure</span><strong>10 - 80 m</strong></div>
+                    <div class="summary-row"><span>Velocity</span><strong>0.3 - 2.5 m/s</strong></div>
+                    <div class="summary-row"><span>Headloss</span><strong>&le; 10 m/km</strong></div>
+                </div>
+                <div class="log-card">
+                    <div class="log-head">
+                        <h3><span class="material-symbols-outlined" style="color:#0066cc;">terminal</span> Live Optimization Log</h3>
+                        <span class="engine-pill">{selected_engine} Engine</span>
+                    </div>
+                    <div class="log-console">
+                        10:42:01 Initializing EPANET workspace...<br>
+                        10:42:02 Feature selected: {menu.split(" (")[0]}<br>
+                        10:42:03 Waiting for .inp network upload...<br>
+                        10:42:05 Evaluating Permen PU criteria...<br>
+                        <span class="log-good">10:42:06 Ready to start optimization.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    """)
 
     st.html("""
         <div class="upload-title">
@@ -579,6 +803,7 @@ else:
         """)
         
         if uploaded_file is None:
+            st.info("Pilih fitur optimizer di atas, lalu unggah file .inp untuk memulai.")
             st.session_state['run_solver'] = False
 
     # =====================================================
