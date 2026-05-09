@@ -132,21 +132,23 @@ def render():
                 st.session_state.file_logged = uploaded_file.name
                 if "solver_results" in st.session_state: del st.session_state["solver_results"]
             
-            # --- TAMPILAN SKEMA AWAL (Style Premium) ---
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.markdown("### 🗺️ Network Topology Preview")
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
-                tmp.write(uploaded_file.getvalue())
-                tmp_path = tmp.name
-            try:
-                import wntr
-                wn_preview = wntr.network.WaterNetworkModel(tmp_path)
-                tampilkan_skema_jaringan(wn_preview, judul=f"Skema: {uploaded_file.name}")
-            except Exception as e:
-                st.error(f"Gagal memuat preview: {e}")
-            finally:
-                if os.path.exists(tmp_path): os.remove(tmp_path)
-            st.markdown('</div>', unsafe_allow_html=True)
+            # --- TAMPILAN SKEMA AWAL (Hanya muncul sebelum simulasi) ---
+            if "solver_results" not in st.session_state:
+                st.markdown('<div class="card">', unsafe_allow_html=True)
+                st.markdown("### 🗺️ Network Topology Preview")
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
+                    tmp.write(uploaded_file.getvalue())
+                    tmp_path = tmp.name
+                try:
+                    # pyrefly: ignore [missing-import]
+                    import wntr
+                    wn_preview = wntr.network.WaterNetworkModel(tmp_path)
+                    tampilkan_skema_jaringan(wn_preview, judul=f"Skema: {uploaded_file.name}")
+                except Exception as e:
+                    st.error(f"Gagal memuat preview: {e}")
+                finally:
+                    if os.path.exists(tmp_path): os.remove(tmp_path)
+                st.markdown('</div>', unsafe_allow_html=True)
 
         # Settings for Ultra or Pressure
         target_prv = 50.0
