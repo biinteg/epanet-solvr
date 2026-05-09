@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 import tempfile
 import os
+import matplotlib.pyplot as plt
 
 def run_hardy_cross(inp_path):
     st.markdown("## 🔄 Analisis Jaringan dengan Metode Hardy Cross")
@@ -268,3 +269,69 @@ def run_hardy_cross(inp_path):
         file_name="hasil_hardy_cross.csv",
         mime="text/csv",
     )
+
+    st.markdown("---")
+    # =========================================================================
+    # VISUALIZATION
+    # =========================================================================
+    st.markdown("### 🗺️ Skema Jaringan & Arah Aliran Final")
+    
+    try:
+        fig, ax = plt.subplots(figsize=(10, 8))
+        
+        pos = {}
+        node_labels = {}
+        for name, node in wn.nodes():
+            pos[name] = node.coordinates
+            
+            # Jika koordinat tidak valid (misal (0,0) di semua node karena tidak ada koordinat)
+            # networkx spring_layout bisa digunakan sebagai fallback
+            
+            try:
+                d = node.demand_timeseries_list[0].base_value * 1000
+            except:
+                d = 0.0
+            
+            if d > 0.01:
+                node_labels[name] = f"{name}\nOut: {d:.1f}"
+            elif d < -0.01:
+                node_labels[name] = f"{name}\nIn: {-d:.1f}"
+            else:
+                node_labels[name] = name
+
+        # Cek jika koordinat kosong atau semuanya di (0,0)
+        coords_list = list(pos.values())
+        if all(c[0] == 0 and c[1] == 0 for c in coords_list) and len(pos) > 1:
+            pos = nx.spring_layout(G, seed=42) # fallback layout
+
+        # Gambar Nodes
+        nx.draw_networkx_nodes(G, pos, ax=ax, node_color='lightblue', node_size=800, edgecolors='black')
+        nx.draw_networkx_labels(G, pos, labels=node_labels, ax=ax, font_size=9, font_weight='bold')
+        
+        # Gambar Edges (Arah Aliran)
+        DiG = nx.DiGraph()
+        edge_labels = {}
+        for p_name in wn.pipe_name_list:
+            p = wn.get_link(p_name)
+            if p.diameter > 0:
+                u = p.start_node_name
+                v = p.end_node_name
+                Q = flows[p_name] * 1000
+                
+                if Q >= 0:
+                    DiG.add_edge(u, v)
+                    edge_labels[(u, v)] = f"{p_name}\nQ={abs(Q):.1f}"
+                else:
+                    DiG.add_edge(v, u)
+                    edge_labels[(v, u)] = f"{p_name}\nQ={abs(Q):.1f}"
+                    
+        nx.draw_networkx_edges(DiG, pos, ax=ax, arrowstyle='-|>', arrowsize=20, edge_color='gray', width=2)
+        nx.draw_networkx_edge_labels(DiG, pos, edge_labels=edge_labels, ax=ax, font_color='red', font_size=9)
+        
+        ax.set_title("Skema Jaringan & Arah Aliran Akhir", fontsize=14, fontweight='bold')
+        ax.axis('off')
+        
+        st.pyplot(fig)
+        plt.close(fig)
+    except Exception as e:
+        st.warning(f"Tidak dapat membuat skema visual: {e}")
