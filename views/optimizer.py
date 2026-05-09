@@ -3,7 +3,7 @@ import streamlit as st
 import tempfile
 import os
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from views import styles
 from modules.auto_solver import run_auto_solver
 from modules.pressure_analysis import run_pressure_analysis
@@ -13,7 +13,7 @@ from modules.helpers import warnai_status_solver, warnai_status_tekanan, tampilk
 def add_log(msg, type='info'):
     if "log_history" not in st.session_state:
         st.session_state["log_history"] = []
-    local_now = datetime.utcnow() + timedelta(hours=7)
+    local_now = datetime.now(timezone.utc) + timedelta(hours=7)
     timestamp = local_now.strftime("%H:%M:%S")
     color = "#66d39b" if type == 'success' else "#ff4b4b" if type == 'error' else "#cfd6d4"
     if type == 'ultra': color = "#bb86fc" # Purple for ultra
@@ -172,7 +172,9 @@ def render():
                             "type": "ultra",
                             "stage1": res1,
                             "stage2": res2,
-                            "final_inp": res2["prv_results"]["inp_path"] if "prv_results" in res2 else res1["inp_file_path"]
+                            "final_inp": (res2["prv_results"]["inp_path"] 
+                                          if ("prv_results" in res2 and isinstance(res2["prv_results"], dict)) 
+                                          else res1["inp_file_path"])
                         }
                         add_log("ULTRA OPTIMIZATION COMPLETE!", 'success')
                     elif "Auto-Solver" in menu:

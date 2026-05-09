@@ -4,6 +4,7 @@ import streamlit as st
 import wntr
 # pyrefly: ignore [missing-import]
 import pandas as pd
+from datetime import datetime, timezone
 from itertools import combinations
 from modules.helpers import (
     MAX_PRESSURE_M,
@@ -58,7 +59,7 @@ def run_pressure_analysis(tmp_path, target_prv=50.0, run_triple_prv=False):
         kandidat_pipa = [p for p in wn.pipe_name_list if wn.get_link(p).diameter > 0.15]
         if len(kandidat_pipa) >= 3:
             combos = list(combinations(kandidat_pipa, 3))
-            best_score = -1; best_combo = None; best_result = None; best_network = None
+            best_score = -1; best_combo = None; best_result = {}; best_network = None
 
             for combo in combos:
                 try:
