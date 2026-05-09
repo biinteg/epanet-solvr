@@ -5,7 +5,7 @@ from modules.helpers import warnai_status_solver
 
 def run_auto_solver(tmp_path):
     st.write(
-        "🔧 Optimasi diameter otomatis berdasarkan "
+        "Optimasi diameter otomatis berdasarkan "
         "kecepatan aliran (target 0.5–2.0 m/s)"
     )
 
@@ -78,11 +78,11 @@ def run_auto_solver(tmp_path):
 
         df = pd.DataFrame(hasil)
 
-        st.markdown("### 📊 Ringkasan Optimasi")
+        st.markdown("### Ringkasan Optimasi")
         c1, c2, c3 = st.columns(3)
         c1.metric("Total Pipa", len(link_ids))
         c2.metric("Diubah", berubah)
-        c3.metric("Engine", "EPyT ✅")
+        c3.metric("Engine", "EPyT")
 
         st.dataframe(
             df.style.map(warnai_status_solver, subset=["Status"]),
@@ -96,7 +96,7 @@ def run_auto_solver(tmp_path):
 
         with open(new_inp, "rb") as file:
             st.download_button(
-                "💾 Unduh File Optimasi",
+                "Unduh File Optimasi",
                 data=file,
                 file_name="Jaringan_Optimasi.inp",
                 mime="text/plain"
