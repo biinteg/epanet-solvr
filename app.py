@@ -276,6 +276,7 @@ st.html("""
     .nav-link {
         color: var(--on-surface-variant);
         text-decoration: none;
+        cursor: pointer;
     }
     .nav-link.active {
         color: var(--primary);
@@ -392,6 +393,12 @@ st.html("""
 if "app_started" not in st.session_state:
     st.session_state["app_started"] = False
 
+page_param = st.query_params.get("page", "")
+if page_param == "optimizer":
+    st.session_state["app_started"] = True
+elif page_param == "home":
+    st.session_state["app_started"] = False
+
 if not st.session_state["app_started"]:
     # =====================================================
     # LANDING PAGE
@@ -407,9 +414,9 @@ if not st.session_state["app_started"]:
         <div class="top-nav">
             <div class="nav-brand">EPANET Solver</div>
             <div class="nav-links">
-                <span class="nav-link active">Home</span>
-                <span class="nav-link">Optimizer</span>
-                <span class="nav-link">Documentation</span>
+                <a class="nav-link active" href="?page=home" target="_self">Home</a>
+                <a class="nav-link" href="?page=optimizer" target="_self">Optimizer</a>
+                <a class="nav-link" href="#documentation" target="_self">Documentation</a>
             </div>
             <div class="nav-actions" aria-label="Account notifications">
                 <span class="material-symbols-outlined">account_circle</span>
@@ -505,14 +512,17 @@ else:
     # MAIN APP (UPLOADER & SOLVERS)
     # =====================================================
     st.html("""
-        <div class="top-nav" style="margin-top: 10px;">
+        <div class="top-nav">
             <div class="nav-brand">EPANET Solver</div>
             <div class="nav-links">
-                <span class="nav-link">Home</span>
-                <span class="nav-link active">Optimizer</span>
-                <span class="nav-link">Documentation</span>
+                <a class="nav-link" href="?page=home" target="_self">Home</a>
+                <a class="nav-link active" href="?page=optimizer" target="_self">Optimizer</a>
+                <a class="nav-link" href="#documentation" target="_self">Documentation</a>
             </div>
-            <div style="font-size: 13px; font-weight: 500; color: var(--primary);">Sign In</div>
+            <div class="nav-actions" aria-label="Account notifications">
+                <span class="material-symbols-outlined">account_circle</span>
+                <span class="material-symbols-outlined">notifications</span>
+            </div>
         </div>
     """)
 
@@ -533,6 +543,7 @@ else:
     if st.sidebar.button("← Kembali ke Beranda"):
         st.session_state["app_started"] = False
         st.session_state["run_solver"] = False
+        st.query_params["page"] = "home"
         st.rerun()
 
     st.html("""
