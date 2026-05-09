@@ -16,6 +16,17 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Global CSS
+st.markdown("""
+    <style>
+    /* Force dark text on primary buttons for better contrast */
+    .stButton > button[kind="primary"] p {
+        color: #0F1115 !important;
+        font-weight: 800 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 if "app_started" not in st.session_state:
     st.session_state["app_started"] = False
 
