@@ -90,18 +90,15 @@ st.html("""
 
     /* Hero Section Styling */
     .hero-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 60px 20px 20px 20px;
-        text-align: center;
+        padding: 60px 0;
+        text-align: left;
     }
     .hero-title {
         font-size: 48px;
         font-weight: 700;
         line-height: 1.1;
         letter-spacing: -0.02em;
-        margin-bottom: 16px;
+        margin-bottom: 24px;
         color: var(--on-surface);
     }
     .hero-subtitle {
@@ -110,7 +107,22 @@ st.html("""
         line-height: 1.5;
         color: var(--on-surface-variant);
         max-width: 600px;
-        margin: 0 auto 32px auto;
+        margin-bottom: 32px;
+    }
+    .hero-image-container {
+        width: 100%;
+        height: 400px;
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0px 10px 40px rgba(0,0,0,0.04);
+        background: linear-gradient(135deg, var(--primary-fixed), var(--secondary-container));
+    }
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.9;
     }
 
     /* Features Bento Grid */
@@ -311,18 +323,37 @@ if not st.session_state["app_started"]:
         </div>
 
         <div class="hero-wrapper">
-            <h1 class="hero-title">Optimize Your Water Network with Precision</h1>
-            <p class="hero-subtitle">Automatically iterate pipe diameters to meet Permen PU No. 18/PRT/M/2007 standards. Save time and ensure compliance effortlessly.</p>
+            <div style="display: flex; gap: 48px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h1 class="hero-title">Optimize Your Water Network with Precision</h1>
+                    <p class="hero-subtitle">Automatically iterate pipe diameters to meet Permen PU No. 18/PRT/M/2007 standards. Save time and ensure compliance effortlessly.</p>
+                    <div style="display: flex; gap: 16px;">
+                        <div id="btn-started"></div>
+                        <div id="btn-docs"></div>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="hero-image-container">
+                        <img class="hero-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4959cl0eiufQMoP3c7ofSocNSRKd6nCUpaOkjH_9PNor_RgbKku2RdYN34FmCO0vvTuQ_AWqywSuOrx8ZNKmc5mlrmnXzg3W3CEFnm4Gt9AQefNnAEtYwFz2zh-ulW3MX_C2dzpfjE3nEVSnzoNKlG0oSm9RNPuTWxUaP_OJ_nIQ_S-4G1YeWZwbPlYbw-zdpv8GupmDIpj2vYlQsyhZ6h_okZurYcTwNIUQDWNPVINLDJYsiKgUw_yo7nJUQZJDxZU-EmajKXw4" alt="Water Network Visualization">
+                    </div>
+                </div>
+            </div>
         </div>
     """)
     
-    col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 2, 1])
-    with col3:
-        if st.button("Get Started", type="primary", use_container_width=True):
-            st.session_state["app_started"] = True
-            st.rerun()
-    with col4:
-        st.button("View Documentation", use_container_width=True)
+    # Injected buttons into the placeholders above using columns for interactivity
+    # Note: Using absolute positioning hack or just columns if needed, but for hero it's better to use native columns
+    # Let's use standard columns for the buttons instead of IDs
+    
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        c1, c2, c3 = st.columns([1, 1, 1])
+        with c1:
+            if st.button("Get Started", type="primary", use_container_width=True):
+                st.session_state["app_started"] = True
+                st.rerun()
+        with c2:
+            st.button("View Documentation", use_container_width=True)
 
     st.html("""
         <div class="problem-section">
@@ -332,17 +363,17 @@ if not st.session_state["app_started"]:
             </p>
             <div class="pain-points-grid">
                 <div class="pain-point-card">
-                    <div class="pain-point-icon"><span class="material-symbols-outlined">schedule</span></div>
+                    <div class="pain-point-icon"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">schedule</span></div>
                     <h3 class="pain-point-title">Wasted Time</h3>
                     <p class="pain-point-desc">Hours spent manually updating pipe sizes and re-running simulations for every minor network change.</p>
                 </div>
                 <div class="pain-point-card">
-                    <div class="pain-point-icon"><span class="material-symbols-outlined">warning</span></div>
+                    <div class="pain-point-icon"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span></div>
                     <h3 class="pain-point-title">Compliance Risks</h3>
                     <p class="pain-point-desc">Difficulty ensuring all nodes and links meet the strict pressure and velocity standards of Permen PU No. 18/PRT/M/2007.</p>
                 </div>
                 <div class="pain-point-card">
-                    <div class="pain-point-icon"><span class="material-symbols-outlined">analytics</span></div>
+                    <div class="pain-point-icon"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span></div>
                     <h3 class="pain-point-title">Suboptimal Design</h3>
                     <p class="pain-point-desc">Trial-and-error approaches often lead to oversized pipes, unnecessarily increasing project construction costs.</p>
                 </div>
@@ -410,24 +441,24 @@ else:
         st.rerun()
 
     st.html("""
-        <div class="hero-wrapper" style="padding-top: 20px; padding-bottom: 0px;">
-            <h1 class="hero-title">Upload Your Network</h1>
-            <p class="hero-subtitle">Drag and drop your .inp file here to begin the optimization process.</p>
+        <div class="hero-wrapper" style="padding-top: 40px; padding-bottom: 20px; text-align: center;">
+            <h1 class="hero-title" style="margin: 0 auto 16px auto;">Upload Your Network</h1>
+            <p class="hero-subtitle" style="margin: 0 auto 32px auto;">Drag and drop your .inp file here to begin the optimization process.</p>
         </div>
         
         <div class="metric-grid">
             <div class="metric-card">
-                <span class="material-symbols-outlined" style="color: #006c49; font-size: 32px;">speed</span>
+                <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px; font-variation-settings: 'FILL' 1;">speed</span>
                 <h3 class="metric-title">Pressure</h3>
                 <p class="metric-val">10 - 80m</p>
             </div>
             <div class="metric-card">
-                <span class="material-symbols-outlined" style="color: #006c49; font-size: 32px;">water_drop</span>
+                <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px; font-variation-settings: 'FILL' 1;">water_drop</span>
                 <h3 class="metric-title">Velocity</h3>
                 <p class="metric-val">0.3 - 2.5 m/s</p>
             </div>
             <div class="metric-card">
-                <span class="material-symbols-outlined" style="color: #006c49; font-size: 32px;">timeline</span>
+                <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px; font-variation-settings: 'FILL' 1;">timeline</span>
                 <h3 class="metric-title">Headloss</h3>
                 <p class="metric-val">Max 10 m/km</p>
             </div>
@@ -447,11 +478,13 @@ else:
     # MAIN
     # =====================================================
 
-    if uploaded_file is not None:
-        with col2:
+        if uploaded_file is not None:
             st.success("File validated. Ready to optimize.")
-            if st.button("Start Optimization", type="primary", use_container_width=True):
-                st.session_state['run_solver'] = True
+            # Use columns for a smaller, centered button
+            bc1, bc2, bc3 = st.columns([1, 2, 1])
+            with bc2:
+                if st.button("Start Optimization →", type="primary", use_container_width=True):
+                    st.session_state['run_solver'] = True
                 
         if st.session_state.get('run_solver', False):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
