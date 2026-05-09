@@ -8,17 +8,13 @@ from views import styles
 from modules.auto_solver import run_auto_solver
 from modules.pressure_analysis import run_pressure_analysis
 from modules.hardy_cross import run_hardy_cross
-from modules.helpers import warnai_status_solver
+from modules.helpers import warnai_status_solver, warnai_status_tekanan, tampilkan_network
 
 def add_log(msg, type='info'):
     if "log_history" not in st.session_state:
         st.session_state["log_history"] = []
-    
-    # Manually adjust to UTC+7 (WIB) to match user device time
-    # This is a robust way to ensure sync with Indonesian local time
     local_now = datetime.utcnow() + timedelta(hours=7)
     timestamp = local_now.strftime("%H:%M:%S")
-    
     color = "#66d39b" if type == 'success' else "#ff4b4b" if type == 'error' else "#cfd6d4"
     log_entry = f'<span style="color: {color};">{timestamp} {msg}</span>'
     st.session_state["log_history"].append(log_entry)
@@ -132,13 +128,22 @@ def render():
                 if "solver_results" in st.session_state:
                     del st.session_state["solver_results"]
 
+        # Feature-specific parameters
+        target_prv = 50.0
+        if "Pressure" in menu:
+            st.markdown("---")
+            st.markdown("### Pressure Analysis Settings")
+            target_prv = st.number_input("Target Tekanan PRV (m)", value=50.0, min_value=10.0, max_value=100.0)
+            run_triple = st.checkbox("Cari Kombinasi Triple PRV (Bisa memakan waktu lama)", value=False)
+        else:
+            run_triple = False
+
         col_btn1, col_btn2 = st.columns([2, 1])
         with col_btn1:
-            start_clicked = st.button("Start Optimization  →", type="primary", use_container_width=True, disabled=uploaded_file is None)
+            start_clicked = st.button("Start Analysis  →", type="primary", use_container_width=True, disabled=uploaded_file is None)
         with col_btn2:
             if st.button("Clear Dashboard", use_container_width=True):
-                if "solver_results" in st.session_state:
-                    del st.session_state["solver_results"]
+                if "solver_results" in st.session_state: del st.session_state["solver_results"]
                 st.session_state["log_history"] = []
                 add_log("Workspace reset.")
                 st.rerun()
@@ -152,14 +157,16 @@ def render():
 
             try:
                 add_log("Preprocessing network data...")
-                with st.spinner(f"Optimizing..."):
+                with st.spinner(f"Running {menu}..."):
                     if "Auto-Solver" in menu:
                         results = run_auto_solver(tmp_path)
-                        st.session_state["solver_results"] = results
-                        add_log("Optimization successfully completed.", 'success')
-                    else:
-                        st.warning("Selected feature is currently in development.")
-                        add_log("Feature not yet supported.", 'error')
+                    elif "Pressure" in menu:
+                        results = run_pressure_analysis(tmp_path, target_prv=target_prv, run_triple_prv=run_triple)
+                    elif "Hardy Cross" in menu:
+                        results = run_hardy_cross(tmp_path)
+                    
+                    st.session_state["solver_results"] = results
+                    add_log("Analysis successfully completed.", 'success')
                 st.rerun()
 
             except Exception as e:
@@ -170,32 +177,47 @@ def render():
                     try: os.remove(tmp_path)
                     except: pass
 
-        # Persistent Results Section
+        # Results Display
         if "solver_results" in st.session_state:
             res = st.session_state["solver_results"]
             st.markdown("---")
-            st.markdown("### 📊 Ringkasan Hasil Optimasi")
             
-            m1, m2, m3 = st.columns(3)
-            m1.metric("Total Pipa", res["metrics"]["total"])
-            m2.metric("Pipa Dimodifikasi", res["metrics"]["changed"])
-            m3.metric("Kepatuhan Permen PU", f"{res['metrics']['compliant']}/{res['metrics']['total']}")
+            if res["type"] == "pressure":
+                st.markdown("### 📊 Diagnosis Tekanan Awal")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Terlalu Rendah", res["metrics_awal"]["low"])
+                m2.metric("Terlalu Tinggi", res["metrics_awal"]["high"])
+                m3.metric("Total Junction", res["metrics_awal"]["total"])
+                st.dataframe(res["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True, height=300)
+                tampilkan_network(res["wn_initial"], res["tekanan_awal"], "Visualisasi Tekanan Awal")
+                
+                if "prv_results" in res:
+                    st.markdown("### 🛠️ Hasil Optimasi Triple PRV")
+                    st.success(f"Kombinasi Terbaik: **{', '.join(res['prv_results']['best_combo'])}**")
+                    st.metric("Node Aman", f"{res['prv_results']['best_score']}/{res['metrics_awal']['total']}")
+                    st.dataframe(res["prv_results"]["df_compare"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True, height=300)
+                    tampilkan_network(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Visualisasi Setelah Triple PRV")
+                    with open(res["prv_results"]["inp_path"], "rb") as f:
+                        st.download_button("📥 Download Triple PRV Network (.inp)", data=f, file_name="Triple_PRV_Result.inp", mime="text/plain", use_container_width=True)
 
-            st.dataframe(
-                res["df"].style.map(warnai_status_solver, subset=["Status Optimasi"]),
-                use_container_width=True,
-                height=400
-            )
+            elif res["type"] == "hardy_cross":
+                st.markdown("### 📊 Hasil Hardy Cross")
+                st.info(f"Loop ditemukan: {res['loops_found']} | Iterasi: {res['iterations']} | Status: {'Konvergen' if res['converged'] else 'Tidak Konvergen'}")
+                c1, c2 = st.columns(2)
+                with c1: st.markdown("**Sejarah Koreksi ΔQ**"); st.dataframe(res["history_df"], height=300)
+                with c2: st.markdown("**Debit Final (L/s)**"); st.dataframe(res["final_df"], height=300)
+                # Note: Visualization for Hardy Cross uses Matplotlib, which might need special handling if it fails
+                st.info("Visualisasi aliran tersedia di backend (matplotlib).")
 
-            if os.path.exists(res["inp_file_path"]):
+            elif res["type"] == "auto_solver":
+                st.markdown("### 📊 Ringkasan Optimasi Diameter")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Total Pipa", res["metrics"]["total"])
+                m2.metric("Dimodifikasi", res["metrics"]["changed"])
+                m3.metric("Kepatuhan PU", f"{res['metrics']['compliant']}/{res['metrics']['total']}")
+                st.dataframe(res["df"].style.map(warnai_status_solver, subset=["Status Optimasi"]), use_container_width=True, height=300)
                 with open(res["inp_file_path"], "rb") as f:
-                    st.download_button(
-                        "📥 Download Optimized Network (.inp)",
-                        data=f,
-                        file_name="Optimized_Network.inp",
-                        mime="text/plain",
-                        use_container_width=True
-                    )
+                    st.download_button("📥 Download Optimized Network (.inp)", data=f, file_name="Optimized_Network.inp", mime="text/plain", use_container_width=True)
 
     st.html("""
         <div class="footer">
