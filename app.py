@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import tempfile
 import os
 
@@ -36,8 +36,26 @@ st.html("""
         --on-tertiary-fixed: #341100;
     }
     
-    html, body, [class*="css"] {
+    html, body, .stApp, [data-testid="stHeader"], [class*="css-"] {
         font-family: 'Hanken Grotesk', sans-serif !important;
+    }
+
+    span.material-symbols-outlined, 
+    i.material-symbols-outlined, 
+    .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined' !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        font-size: 24px !important;
+        line-height: 1 !important;
+        display: inline-block !important;
+        direction: ltr !important;
+        word-wrap: normal !important;
+        white-space: nowrap !important;
+        -webkit-font-smoothing: antialiased !important;
+        text-rendering: optimizeLegibility !important;
+        -moz-osx-font-smoothing: grayscale !important;
+        font-feature-settings: 'liga' !important;
     }
 
     /* Force dark text on primary buttons for better contrast */
@@ -557,6 +575,7 @@ if not st.session_state["app_started"]:
     # LANDING PAGE
     # =====================================================
     st.html("""
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
         <style>
         /* Hide sidebar and header on landing page */
         [data-testid="collapsedControl"] {display: none;}
@@ -604,12 +623,12 @@ if not st.session_state["app_started"]:
     with col1:
         c1, c2, c3 = st.columns([1, 1, 1])
         with c1:
-            if st.button("Get Started", type="primary", use_container_width=True):
+            if st.button("Get Started", type="primary", key="hero_start", use_container_width=True):
                 st.session_state["app_started"] = True
                 st.query_params["page"] = "optimizer"
                 st.rerun()
         with c2:
-            st.button("View Documentation", use_container_width=True)
+            st.button("View Documentation", key="hero_docs", use_container_width=True)
 
     st.html("""
         <div class="problem-section">
@@ -666,6 +685,7 @@ else:
     # MAIN APP (UPLOADER & SOLVERS)
     # =====================================================
     st.html("""
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
         <style>
         [data-testid="collapsedControl"] {display: none;}
         section[data-testid="stSidebar"] {display: none !important;}
