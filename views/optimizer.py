@@ -203,14 +203,26 @@ def render():
                 tabs = st.tabs(["Diameters (Stage 1)", "Pressure (Stage 2)", "Final Network"])
                 with tabs[0]:
                     st.markdown("### Hasil Optimasi Diameter")
-                    st.dataframe(res["stage1"]["df"].style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
+                    df1 = res["stage1"]["df"]
+                    if "Status" in df1.columns:
+                        st.dataframe(df1.style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
+                    else:
+                        st.dataframe(df1, use_container_width=True)
                 with tabs[1]:
                     st.markdown("### Perbandingan Tekanan Final")
                     if "prv_results" in res["stage2"]:
                         st.success(f"PRV installed on: {', '.join(res['stage2']['prv_results']['best_combo'])}")
-                        st.dataframe(res["stage2"]["prv_results"]["df_compare"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                        df2 = res["stage2"]["prv_results"]["df_compare"]
+                        if "Status" in df2.columns:
+                            st.dataframe(df2.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                        else:
+                            st.dataframe(df2, use_container_width=True)
                     else:
-                        st.dataframe(res["stage2"]["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                        df2_awal = res["stage2"]["df_awal"]
+                        if "Status" in df2_awal.columns:
+                            st.dataframe(df2_awal.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                        else:
+                            st.dataframe(df2_awal, use_container_width=True)
                 with tabs[2]:
                     st.markdown("### Visualisasi Akhir")
                     final_network = res["stage2"]["prv_results"]["best_network"] if "prv_results" in res["stage2"] else res["stage2"]["wn_initial"]
@@ -230,7 +242,11 @@ def render():
 
             elif res["type"] == "auto_solver":
                 st.markdown("### 📊 Ringkasan Optimasi Diameter")
-                st.dataframe(res["df"].style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
+                df_auto = res["df"]
+                if "Status" in df_auto.columns:
+                    st.dataframe(df_auto.style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
+                else:
+                    st.dataframe(df_auto, use_container_width=True)
                 with open(res["inp_file_path"], "rb") as f:
                     st.download_button("📥 Download Optimized Network", data=f, file_name="Diameter_Optimized.inp", use_container_width=True)
 
