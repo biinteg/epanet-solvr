@@ -101,6 +101,7 @@ def run_auto_solver(tmp_path):
 
         # Return results to view
         return {
+            "type": "auto_solver",
             "df": df,
             "metrics": {
                 "total": len(link_ids),
