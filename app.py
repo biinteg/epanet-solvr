@@ -81,11 +81,38 @@ st.html("""
 
     /* File Uploader Card */
     [data-testid="stFileUploadDropzone"] {
-        background-color: #F5F5F7 !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 32px !important;
-        box-shadow: 0px 10px 40px rgba(0,0,0,0.04) !important;
+        background-color: #ffffff !important;
+        border: 2px dashed #c1c6d5 !important;
+        border-radius: 10px !important;
+        min-height: 315px !important;
+        padding: 48px 32px !important;
+        box-shadow: 0px 18px 50px rgba(21, 37, 65, 0.06) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    [data-testid="stFileUploader"] {
+        max-width: 820px;
+        margin: 0 auto;
+    }
+    [data-testid="stFileUploader"] label {
+        display: none !important;
+    }
+    [data-testid="stFileUploadDropzone"] svg {
+        color: #b7becd !important;
+        width: 54px !important;
+        height: 54px !important;
+    }
+    [data-testid="stFileUploadDropzone"] button {
+        background-color: #eceef2 !important;
+        color: #0b1220 !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        padding: 10px 24px !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stFileUploadDropzone"] div {
+        color: #0b1220 !important;
     }
 
     /* Hero Section Styling */
@@ -229,12 +256,11 @@ st.html("""
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 16px 24px;
-        background-color: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(20px);
-        box-shadow: 0px 10px 40px rgba(0,0,0,0.04);
-        margin-bottom: 30px;
-        border-radius: 12px;
+        padding: 18px 28px;
+        background-color: #ffffff;
+        box-shadow: none;
+        margin: 0 -10px 18px -10px;
+        border-radius: 0;
     }
     .nav-brand {
         font-size: 24px;
@@ -244,8 +270,8 @@ st.html("""
     .nav-links {
         display: flex;
         gap: 32px;
-        font-size: 13px;
-        font-weight: 500;
+        font-size: 14px;
+        font-weight: 700;
     }
     .nav-link {
         color: var(--on-surface-variant);
@@ -254,18 +280,45 @@ st.html("""
     .nav-link.active {
         color: var(--primary);
         font-weight: 700;
-        border-bottom: 2px solid var(--primary);
-        padding-bottom: 4px;
+        border-bottom: 3px solid var(--primary);
+        padding-bottom: 8px;
+    }
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        color: #5b6270;
+    }
+    .nav-actions .material-symbols-outlined {
+        font-size: 25px;
     }
     
     /* Footer */
     .footer {
-        text-align: center;
-        padding: 40px 20px;
-        margin-top: 60px;
-        border-top: 1px solid var(--outline-variant);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 32px 52px;
+        margin: 80px -10px 0 -10px;
+        background-color: #f4f5f7;
+        border-top: 0;
         color: var(--on-surface-variant);
         font-size: 13px;
+    }
+    .footer-brand {
+        color: #0b1220;
+        font-weight: 800;
+    }
+    .footer-copy {
+        color: #007f64;
+    }
+    .footer-links {
+        display: flex;
+        gap: 26px;
+        color: #17213a;
+        font-size: 13px;
+        white-space: nowrap;
     }
 
     /* Metric cards for Upload Page */
@@ -273,16 +326,16 @@ st.html("""
         display: flex;
         justify-content: center;
         gap: 16px;
-        margin-top: 24px;
-        margin-bottom: 32px;
+        margin: 32px auto 40px auto;
         flex-wrap: wrap;
+        max-width: 820px;
     }
     .metric-card {
-        background-color: var(--surface-container-low);
+        background-color: #f4f5f7;
         border-radius: 8px;
-        padding: 16px;
+        padding: 20px 24px 18px 24px;
         text-align: center;
-        min-width: 150px;
+        min-width: 236px;
     }
     .metric-title {
         font-size: 13px;
@@ -293,6 +346,45 @@ st.html("""
     .metric-val {
         font-size: 15px;
         color: var(--on-surface-variant);
+    }
+    .upload-title {
+        padding-top: 12px;
+        padding-bottom: 20px;
+        text-align: center;
+    }
+    .upload-title .hero-title {
+        font-size: 46px;
+        margin: 0 auto 10px auto;
+    }
+    .upload-title .hero-subtitle {
+        margin: 0 auto;
+        color: #17213a;
+    }
+    .optimizer-action {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    .optimizer-action .stButton > button {
+        min-height: 62px;
+        font-size: 22px !important;
+        border-radius: 9999px !important;
+        box-shadow: 0px 10px 24px rgba(0, 78, 159, 0.28) !important;
+    }
+    @media (max-width: 760px) {
+        .top-nav, .footer {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .footer-links {
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .metric-card {
+            width: 100%;
+        }
+        .upload-title .hero-title {
+            font-size: 34px;
+        }
     }
     </style>
 """)
@@ -312,14 +404,17 @@ if not st.session_state["app_started"]:
         section[data-testid="stSidebar"] {display: none !important;}
         </style>
 
-        <div class="top-nav" style="margin-top: 10px;">
+        <div class="top-nav">
             <div class="nav-brand">EPANET Solver</div>
             <div class="nav-links">
                 <span class="nav-link active">Home</span>
                 <span class="nav-link">Optimizer</span>
                 <span class="nav-link">Documentation</span>
             </div>
-            <div style="font-size: 13px; font-weight: 500; color: var(--primary);">Sign In</div>
+            <div class="nav-actions" aria-label="Account notifications">
+                <span class="material-symbols-outlined">account_circle</span>
+                <span class="material-symbols-outlined">notifications</span>
+            </div>
         </div>
 
         <div class="hero-wrapper">
@@ -441,27 +536,9 @@ else:
         st.rerun()
 
     st.html("""
-        <div class="hero-wrapper" style="padding-top: 40px; padding-bottom: 20px; text-align: center;">
-            <h1 class="hero-title" style="margin: 0 auto 16px auto;">Upload Your Network</h1>
-            <p class="hero-subtitle" style="margin: 0 auto 32px auto;">Drag and drop your .inp file here to begin the optimization process.</p>
-        </div>
-        
-        <div class="metric-grid">
-            <div class="metric-card">
-                <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px; font-variation-settings: 'FILL' 1;">speed</span>
-                <h3 class="metric-title">Pressure</h3>
-                <p class="metric-val">10 - 80m</p>
-            </div>
-            <div class="metric-card">
-                <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px; font-variation-settings: 'FILL' 1;">water_drop</span>
-                <h3 class="metric-title">Velocity</h3>
-                <p class="metric-val">0.3 - 2.5 m/s</p>
-            </div>
-            <div class="metric-card">
-                <span class="material-symbols-outlined" style="color: var(--primary); font-size: 32px; font-variation-settings: 'FILL' 1;">timeline</span>
-                <h3 class="metric-title">Headloss</h3>
-                <p class="metric-val">Max 10 m/km</p>
-            </div>
+        <div class="upload-title">
+            <h1 class="hero-title">Upload Your Network</h1>
+            <p class="hero-subtitle">Drag and drop your .inp file here to begin the optimization process.</p>
         </div>
     """)
 
@@ -469,22 +546,47 @@ else:
     col1, col2, col3 = st.columns([1, 4, 1])
     with col2:
         uploaded_file = st.file_uploader("", type=["inp"])
+
+        st.html("""
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <span class="material-symbols-outlined" style="color: #007f64; font-size: 32px; font-variation-settings: 'FILL' 1;">speed</span>
+                    <h3 class="metric-title">Pressure</h3>
+                    <p class="metric-val">10 - 80m</p>
+                </div>
+                <div class="metric-card">
+                    <span class="material-symbols-outlined" style="color: #007f64; font-size: 32px; font-variation-settings: 'FILL' 1;">water_drop</span>
+                    <h3 class="metric-title">Velocity</h3>
+                    <p class="metric-val">0.3 - 2.5 m/s</p>
+                </div>
+                <div class="metric-card">
+                    <span class="material-symbols-outlined" style="color: #007f64; font-size: 32px; font-variation-settings: 'FILL' 1;">timeline</span>
+                    <h3 class="metric-title">Headloss</h3>
+                    <p class="metric-val">Max 10 m/km</p>
+                </div>
+            </div>
+        """)
         
         if uploaded_file is None:
-            st.info("Pilih modul di sidebar (kiri) untuk mengatur engine. Lalu unggah file .inp untuk memulai.")
             st.session_state['run_solver'] = False
 
     # =====================================================
     # MAIN
     # =====================================================
 
+        action_left, action_mid, action_right = st.columns([1.15, 1, 1.15])
+        with action_mid:
+            start_clicked = st.button(
+                "Start Optimization  →",
+                type="primary",
+                use_container_width=True,
+                disabled=uploaded_file is None,
+            )
+
         if uploaded_file is not None:
             st.success("File validated. Ready to optimize.")
-            # Use columns for a smaller, centered button
-            bc1, bc2, bc3 = st.columns([1, 2, 1])
-            with bc2:
-                if st.button("Start Optimization →", type="primary", use_container_width=True):
-                    st.session_state['run_solver'] = True
+            if start_clicked:
+                st.session_state['run_solver'] = True
                 
         if st.session_state.get('run_solver', False):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
@@ -524,6 +626,13 @@ else:
                         
     st.html("""
         <div class="footer">
-            © 2026 EPANET Solver. Compliance: Permen PU Standards.
+            <div class="footer-brand">EPANET Solver</div>
+            <div class="footer-copy">© 2026 EPANET Solver. Compliance: Permen PU Standards.</div>
+            <div class="footer-links">
+                <span>Regulatory Standards</span>
+                <span>Technical Support</span>
+                <span>Terms of Service</span>
+                <span>Privacy Policy</span>
+            </div>
         </div>
     """)
