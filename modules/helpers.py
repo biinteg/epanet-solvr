@@ -4,6 +4,12 @@ import numpy as np
 import wntr
 import streamlit as st
 
+MIN_PRESSURE_M = 10
+MAX_PRESSURE_M = 80
+MIN_VELOCITY_MS = 0.3
+MAX_VELOCITY_MS = 2.5
+MAX_HEADLOSS_M_PER_KM = 10
+
 # =====================================================
 # FUNGSI WARNA
 # =====================================================
@@ -44,10 +50,10 @@ def tampilkan_network(wn, tekanan_dict=None, judul="Visualisasi Jaringan"):
             if pd.isna(p) or p < -100:
                 p = 0
             
-            if p < 15:
+            if p < MIN_PRESSURE_M:
                 node_colors.append("red")
                 color_text = 'white'
-            elif p > 80:
+            elif p > MAX_PRESSURE_M:
                 node_colors.append("orange")
                 color_text = 'black'
             else:
@@ -82,11 +88,11 @@ def tampilkan_network(wn, tekanan_dict=None, judul="Visualisasi Jaringan"):
         from matplotlib.lines import Line2D
         legend_elements = [
             Line2D([0], [0], marker='o', color='w', markerfacecolor='limegreen',
-                   markersize=12, label='Aman (15-80 m)', markeredgecolor='black'),
+                   markersize=12, label=f'Aman ({MIN_PRESSURE_M}-{MAX_PRESSURE_M} m)', markeredgecolor='black'),
             Line2D([0], [0], marker='o', color='w', markerfacecolor='orange',
-                   markersize=12, label='Tinggi (>80 m)', markeredgecolor='black'),
+                   markersize=12, label=f'Tinggi (>{MAX_PRESSURE_M} m)', markeredgecolor='black'),
             Line2D([0], [0], marker='o', color='w', markerfacecolor='red',
-                   markersize=12, label='Rendah (<15 m)', markeredgecolor='black')
+                   markersize=12, label=f'Rendah (<{MIN_PRESSURE_M} m)', markeredgecolor='black')
         ]
         ax.legend(handles=legend_elements, loc='upper right', frameon=True, fontsize=10)
     

@@ -2,7 +2,12 @@ import streamlit as st
 import wntr
 import pandas as pd
 from itertools import combinations
-from modules.helpers import warnai_status_tekanan, tampilkan_network
+from modules.helpers import (
+    MAX_PRESSURE_M,
+    MIN_PRESSURE_M,
+    warnai_status_tekanan,
+    tampilkan_network,
+)
 
 def run_pressure_analysis(tmp_path):
     st.write("Analisis tekanan dan pencarian kombinasi terbaik Triple PRV.")
@@ -41,10 +46,10 @@ def run_pressure_analysis(tmp_path):
         if pd.isna(p) or p < -100:
             p = 0
             status = "Error"
-        elif p < 15:
+        elif p < MIN_PRESSURE_M:
             status = "Terlalu Rendah"
             low_pressure += 1
-        elif p > 80:
+        elif p > MAX_PRESSURE_M:
             status = "Bahaya (Terlalu Tinggi)"
             high_pressure += 1
         else:
@@ -60,8 +65,8 @@ def run_pressure_analysis(tmp_path):
     st.markdown("### Diagnosis Tekanan Awal")
     
     col1, col2, col3 = st.columns(3)
-    col1.metric("Rendah (<15m)", low_pressure)
-    col2.metric("Tinggi (>80m)", high_pressure)
+    col1.metric(f"Rendah (<{MIN_PRESSURE_M}m)", low_pressure)
+    col2.metric(f"Tinggi (>{MAX_PRESSURE_M}m)", high_pressure)
     col3.metric("Total Node", len(wn.junction_name_list))
     
     st.dataframe(
@@ -118,7 +123,7 @@ def run_pressure_analysis(tmp_path):
                             continue
 
                         aman = sum(1 for n in wn_test.junction_name_list 
-                                 if 15 <= tekanan[n] <= 80)
+                                 if MIN_PRESSURE_M <= tekanan[n] <= MAX_PRESSURE_M)
 
                         if aman > best_score:
                             best_score = aman
@@ -145,9 +150,9 @@ def run_pressure_analysis(tmp_path):
                     new_p = best_result[node]
                     p_tampil = new_p if (pd.notna(new_p) and new_p > -100) else 0
 
-                    if p_tampil < 15:
+                    if p_tampil < MIN_PRESSURE_M:
                         status = "Terlalu Rendah"
-                    elif p_tampil > 80:
+                    elif p_tampil > MAX_PRESSURE_M:
                         status = "Bahaya (Terlalu Tinggi)"
                     else:
                         status = "Aman"
