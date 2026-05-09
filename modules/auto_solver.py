@@ -17,8 +17,14 @@ def run_auto_solver(tmp_path):
     Runs the auto-solver and returns a dictionary with the results dataframe,
     summary metrics, and the path to the optimized INP file.
     """
-    d = None
     try:
+        # Use wntr for reliable topology mapping
+        wn = wntr.network.WaterNetworkModel(tmp_path)
+        pipe_names_map = {}
+        for p_name in wn.pipe_name_list:
+            pipe = wn.get_link(p_name)
+            pipe_names_map[p_name] = f"Pipa {pipe.start_node_name} - {pipe.end_node_name}"
+            
         d = epanet(tmp_path)
         link_ids = d.getLinkNameID()
         diameter_awal = d.getLinkDiameter()
@@ -83,12 +89,8 @@ def run_auto_solver(tmp_path):
             if sesuai_permen:
                 patuh += 1
 
-            # Get start and end nodes for descriptive name
-            node_indices = d.getLinkNodes(i + 1)
-            node_ids = d.getNodeNameID()
-            from_node = node_ids[node_indices[0] - 1]
-            to_node = node_ids[node_indices[1] - 1]
-            label_pipa = f"Pipa {from_node} - {to_node}"
+            # Use the mapping created with wntr
+            label_pipa = pipe_names_map.get(link_ids[i], f"Pipa {link_ids[i]}")
 
             hasil.append({
                 "ID": link_ids[i],
