@@ -242,6 +242,7 @@ def render():
 
             elif res["type"] == "auto_solver":
                 st.markdown("### 📊 Ringkasan Optimasi Diameter")
+                st.info("💡 Tip: Gunakan fitur 'Ultra Optimize' untuk menggabungkan optimasi ini dengan stabilisasi tekanan otomatis.")
                 df_auto = res["df"]
                 if "Status" in df_auto.columns:
                     st.dataframe(df_auto.style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
@@ -249,6 +250,20 @@ def render():
                     st.dataframe(df_auto, use_container_width=True)
                 with open(res["inp_file_path"], "rb") as f:
                     st.download_button("📥 Download Optimized Network", data=f, file_name="Diameter_Optimized.inp", use_container_width=True)
+
+            elif res["type"] == "hardy_cross":
+                st.success(f"⚖️ Hardy Cross Analysis Finished in {res['iterations']} iterations.")
+                h_tabs = st.tabs(["Iterasi Loop", "Debit Final", "Final Network"])
+                with h_tabs[0]:
+                    st.markdown("### Log Konvergensi Loop")
+                    st.dataframe(res["history_df"], use_container_width=True)
+                with h_tabs[1]:
+                    st.markdown("### Perbandingan Debit Awal vs Akhir")
+                    st.dataframe(res["final_df"], use_container_width=True)
+                with h_tabs[2]:
+                    st.markdown("### Visualisasi Aliran")
+                    dummy_tekanan = {n: 0 for n in res["wn"].node_name_list}
+                    tampilkan_network(res["wn"], dummy_tekanan, "Hardy Cross Flow Distribution")
 
     st.html("""
         <div class="footer">
