@@ -7,7 +7,7 @@ import os
 import matplotlib.pyplot as plt
 
 def run_hardy_cross(inp_path):
-    st.markdown("## 🔄 Analisis Jaringan dengan Metode Hardy Cross")
+    st.markdown("## Analisis Jaringan dengan Metode Hardy Cross")
     st.write(
         "Metode Hardy Cross adalah metode iteratif manual untuk menghitung "
         "aliran dalam jaringan pipa tertutup (loop)."
@@ -22,14 +22,14 @@ def run_hardy_cross(inp_path):
     # Validasi jaringan (Hardy Cross optimal untuk jaringan sederhana tanpa pompa/valve)
     if len(wn.pump_name_list) > 0 or len(wn.valve_name_list) > 0:
         st.warning(
-            "⚠️ **Peringatan**: Jaringan ini mengandung Pompa atau Valve. "
+            "**Peringatan**: Jaringan ini mengandung Pompa atau Valve. "
             "Metode Hardy Cross murni (berdasarkan formula pipa Hazen-Williams) "
             "mungkin tidak memberikan hasil yang akurat untuk komponen non-pipa. "
             "Komponen tersebut akan diabaikan/dilewati dalam iterasi loop."
         )
 
     if len(wn.reservoir_name_list) == 0 and len(wn.tank_name_list) == 0:
-        st.error("❌ **Error**: Jaringan harus memiliki minimal 1 Reservoir atau Tangki sebagai sumber (slack node).")
+        st.error("**Error**: Jaringan harus memiliki minimal 1 Reservoir atau Tangki sebagai sumber (slack node).")
         return
 
     with st.spinner("Membangun model graf jaringan..."):
@@ -140,9 +140,9 @@ def run_hardy_cross(inp_path):
             loops.append(loop_pipes)
 
     if not loops:
-        st.success("✅ Jaringan merupakan sistem cabang (Branching / Tree). Tidak ada sirkuit tertutup (loop), sehingga aliran awal sudah merupakan hasil yang tepat.")
+        st.success("Jaringan merupakan sistem cabang (Branching / Tree). Tidak ada sirkuit tertutup (loop), sehingga aliran awal sudah merupakan hasil yang tepat.")
     else:
-        st.info(f"🔍 Ditemukan **{len(loops)} fundamental loops** dalam jaringan. Memulai iterasi Hardy Cross...")
+        st.info(f"Ditemukan **{len(loops)} fundamental loops** dalam jaringan. Memulai iterasi Hardy Cross...")
 
     # =========================================================================
     # HARDY CROSS ITERATION
@@ -222,9 +222,9 @@ def run_hardy_cross(inp_path):
 
     if loops:
         if converged:
-            st.success(f"✅ **Konvergen!** Solusi ditemukan pada iterasi ke-{final_iter}.")
+            st.success(f"**Konvergen!** Solusi ditemukan pada iterasi ke-{final_iter}.")
         else:
-            st.warning(f"⚠️ **Batas Maksimum Iterasi Tercapai!** Algoritma dihentikan pada iterasi {max_iter} namun nilai ΔQ masih di atas toleransi.")
+            st.warning(f"**Batas Maksimum Iterasi Tercapai!** Algoritma dihentikan pada iterasi {max_iter} namun nilai ΔQ masih di atas toleransi.")
 
     # =========================================================================
     # DISPLAY RESULTS
@@ -234,18 +234,19 @@ def run_hardy_cross(inp_path):
     # DataFrame Sejarah Iterasi
     if history:
         with col1:
-            st.markdown("### 📈 Ringkasan Iterasi (Koreksi ΔQ)")
+            st.markdown("### Ringkasan Iterasi (Koreksi ΔQ)")
             df_history = pd.DataFrame(history)
             st.dataframe(df_history, height=350, use_container_width=True)
 
     # DataFrame Hasil Akhir
     with col2:
-        st.markdown("### 🚰 Hasil Aliran Akhir")
+        st.markdown("### Hasil Aliran Akhir")
         final_results = []
         for p_name in wn.pipe_name_list:
             if wn.get_link(p_name).diameter > 0:
+                p = wn.get_link(p_name)
                 final_results.append({
-                    "Pipa ID": p_name,
+                    "Pipa ID": f"{p_name} ({p.start_node_name}-{p.end_node_name})",
                     "Debit Awal (L/s)": initial_flows[p_name] * 1000,
                     "Debit Akhir (L/s)": flows[p_name] * 1000
                 })
@@ -264,7 +265,7 @@ def run_hardy_cross(inp_path):
     # Unduh Hasil
     csv = df_final.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label="📥 Unduh Hasil Hardy Cross (CSV)",
+        label="Unduh Hasil Hardy Cross (CSV)",
         data=csv,
         file_name="hasil_hardy_cross.csv",
         mime="text/csv",
@@ -274,7 +275,7 @@ def run_hardy_cross(inp_path):
     # =========================================================================
     # VISUALIZATION
     # =========================================================================
-    st.markdown("### 🗺️ Skema Jaringan & Arah Aliran Final")
+    st.markdown("### Skema Jaringan & Arah Aliran Final")
     
     try:
         fig, ax = plt.subplots(figsize=(10, 8))
@@ -320,10 +321,10 @@ def run_hardy_cross(inp_path):
                 
                 if Q >= 0:
                     DiG.add_edge(u, v)
-                    edge_labels[(u, v)] = f"{p_name}\nQ={abs(Q):.1f}"
+                    edge_labels[(u, v)] = f"{p_name} ({u}-{v})\nQ={abs(Q):.1f}"
                 else:
                     DiG.add_edge(v, u)
-                    edge_labels[(v, u)] = f"{p_name}\nQ={abs(Q):.1f}"
+                    edge_labels[(v, u)] = f"{p_name} ({u}-{v})\nQ={abs(Q):.1f}"
                     
         nx.draw_networkx_edges(DiG, pos, ax=ax, arrowstyle='-|>', arrowsize=20, edge_color='gray', width=2)
         nx.draw_networkx_edge_labels(DiG, pos, edge_labels=edge_labels, ax=ax, font_color='red', font_size=9)
