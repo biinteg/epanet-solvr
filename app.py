@@ -4,6 +4,7 @@ import os
 
 from modules.auto_solver import run_auto_solver
 from modules.pressure_analysis import run_pressure_analysis
+from modules.hardy_cross import run_hardy_cross
 
 # =====================================================
 # PAGE CONFIG
@@ -21,7 +22,8 @@ menu = st.sidebar.radio(
     "Navigasi:",
     [
         "🚀 Auto-Solver (Engine: EPyT)",
-        "🩺 Analisis Tekanan & Auto-PRV (Engine: WNTR)"
+        "🩺 Analisis Tekanan & Auto-PRV (Engine: WNTR)",
+        "🔄 Analisis Loop (Metode Hardy Cross)"
     ]
 )
 
@@ -56,6 +58,12 @@ if uploaded_file is not None:
         # =================================================
         elif menu == "🩺 Analisis Tekanan & Auto-PRV (Engine: WNTR)":
             run_pressure_analysis(tmp_path)
+
+        # =================================================
+        # FEATURE 3 : HARDY CROSS
+        # =================================================
+        elif menu == "🔄 Analisis Loop (Metode Hardy Cross)":
+            run_hardy_cross(tmp_path)
 
     except Exception as e:
         st.error(f"❌ Gagal menjalankan analisis: {str(e)}")

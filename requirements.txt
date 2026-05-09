@@ -4,3 +4,4 @@ wntr
 pandas
 matplotlib
 numpy
+networkx
