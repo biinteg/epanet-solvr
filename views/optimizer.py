@@ -64,7 +64,8 @@ def render():
             "Auto-Solver Only", 
             "Pressure & Auto-PRV", 
             "Hardy Cross",
-            "Ultra Optimize (All-in-One)"
+            "Ultra Optimize (All-in-One)",
+            "Network Topology Visualizer"
         ]
         
         old_menu = st.session_state.get("last_selected_feature", "")
@@ -131,24 +132,6 @@ def render():
                 add_log(f"File uploaded: {uploaded_file.name}", 'success')
                 st.session_state.file_logged = uploaded_file.name
                 if "solver_results" in st.session_state: del st.session_state["solver_results"]
-            
-            # --- TAMPILAN SKEMA AWAL (Hanya muncul sebelum simulasi) ---
-            if "solver_results" not in st.session_state:
-                st.markdown('<div class="card">', unsafe_allow_html=True)
-                st.markdown("### 🗺️ Network Topology Preview")
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
-                    tmp.write(uploaded_file.getvalue())
-                    tmp_path = tmp.name
-                try:
-                    # pyrefly: ignore [missing-import]
-                    import wntr
-                    wn_preview = wntr.network.WaterNetworkModel(tmp_path)
-                    tampilkan_skema_jaringan(wn_preview, judul=f"Skema: {uploaded_file.name}")
-                except Exception as e:
-                    st.error(f"Gagal memuat preview: {e}")
-                finally:
-                    if os.path.exists(tmp_path): os.remove(tmp_path)
-                st.markdown('</div>', unsafe_allow_html=True)
 
         # Settings for Ultra or Pressure
         target_prv = 50.0
@@ -212,6 +195,25 @@ def render():
                 if os.path.exists(tmp_path):
                     try: os.remove(tmp_path)
                     except: pass
+
+        # Network Topology Visualizer (Feature ke-5)
+        if uploaded_file and "Network Topology" in menu:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown("### 🗺️ Network Topology Visualization")
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
+                tmp.write(uploaded_file.getvalue())
+                tmp_path = tmp.name
+            try:
+                # pyrefly: ignore [missing-import]
+                import wntr
+                wn_preview = wntr.network.WaterNetworkModel(tmp_path)
+                tampilkan_skema_jaringan(wn_preview, judul=f"Skema: {uploaded_file.name}")
+                add_log(f"Visualizing topology: {uploaded_file.name}", 'info')
+            except Exception as e:
+                st.error(f"Gagal memuat visualisasi: {e}")
+            finally:
+                if os.path.exists(tmp_path): os.remove(tmp_path)
+            st.markdown('</div>', unsafe_allow_html=True)
 
         # Results Display
         if "solver_results" in st.session_state:
