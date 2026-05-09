@@ -42,41 +42,21 @@ def render():
     with col_left:
         st.markdown("### Select Feature")
         
+        # We use a clean radio and handle styling in CSS via the key
         feature_options = [
-            "Auto-Solver (Engine: EPyT)",
-            "Pressure & Auto-PRV (Engine: WNTR)",
-            "Hardy Cross (Manual Loop)"
+            "Auto-Solver",
+            "Pressure & Auto-PRV",
+            "Hardy Cross"
         ]
         
-        # Use a hidden radio but styled cards
-        # For simplicity and interactivity, we'll use a standard radio for now but on the left
         menu = st.radio(
             "Pilih fitur optimizer",
             feature_options,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key="feature_selector"
         )
         
-        selected_engine = "EPyT" if "EPyT" in menu else "WNTR" if "WNTR" in menu else "Manual Loop"
-        
-        st.html(f"""
-            <div class="feature-selection-container" style="margin-top: 20px;">
-                <div class="feature-selection-card {"selected" if "Auto-Solver" in menu else ""}">
-                    <span class="material-symbols-outlined card-icon">tune</span>
-                    <h4>Auto-Solver</h4>
-                    <p>Optimasi diameter pipa otomatis berbasis EPyT.</p>
-                </div>
-                <div class="feature-selection-card {"selected" if "Pressure" in menu else ""}">
-                    <span class="material-symbols-outlined card-icon">valve</span>
-                    <h4>Pressure & Auto-PRV</h4>
-                    <p>Analisis tekanan node & Triple PRV.</p>
-                </div>
-                <div class="feature-selection-card {"selected" if "Hardy Cross" in menu else ""}">
-                    <span class="material-symbols-outlined card-icon">account_tree</span>
-                    <h4>Hardy Cross</h4>
-                    <p>Analisis loop jaringan manual.</p>
-                </div>
-            </div>
-        """)
+        selected_engine = "EPyT" if "Auto-Solver" in menu else "WNTR" if "Pressure" in menu else "Manual Loop"
         
         st.markdown("---")
         st.markdown("### Target Criteria")
@@ -110,7 +90,7 @@ def render():
                     </div>
                     <div class="log-console">
                         10:42:01 Initializing EPANET workspace...<br>
-                        10:42:02 Feature selected: {menu.split(" (")[0]}<br>
+                        10:42:02 Feature selected: {menu}<br>
                         10:42:03 Waiting for .inp network upload...<br>
                         10:42:05 Evaluating Permen PU criteria...<br>
                         <span class="log-good">10:42:06 Ready to start optimization.</span>
@@ -123,14 +103,9 @@ def render():
                     <h2 class="hero-title" style="font-size: 32px;">Upload Your Network</h2>
                     <p class="hero-subtitle" style="margin: 0;">Drag and drop your .inp file here to begin.</p>
                 </div>
-                
-                <div style="margin-top: 24px;">
-                    uploaded_file = st.file_uploader("", type=["inp"])
-                </div>
             </div>
         """)
         
-        # We need to put the actual file uploader here outside the HTML block
         uploaded_file = st.file_uploader("", type=["inp"], key="main_uploader", label_visibility="collapsed")
         
         if uploaded_file is None:
@@ -159,7 +134,7 @@ def render():
                 tmp_path = tmp.name
 
             try:
-                with st.spinner(f"Optimizing Network... using {menu.split('(')[0].strip()}"):
+                with st.spinner(f"Optimizing Network... using {menu}"):
                     if "Auto-Solver" in menu:
                         run_auto_solver(tmp_path)
                     elif "Pressure" in menu:
@@ -181,9 +156,5 @@ def render():
         <div class="footer">
             <div class="footer-brand">EPANET Solver</div>
             <div class="footer-copy">© 2026 EPANET Solver. Compliance: Permen PU Standards.</div>
-            <div class="footer-links">
-                <span>Regulatory Standards</span>
-                <span>Technical Support</span>
-            </div>
         </div>
     """)

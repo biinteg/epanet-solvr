@@ -425,15 +425,6 @@ def inject_global_css():
             transition: all 0.2s ease;
             text-align: left;
         }
-        .feature-selection-card:hover {
-            background-color: #eceef2;
-            transform: translateX(4px);
-        }
-        .feature-selection-card.selected {
-            background-color: #ffffff;
-            border-color: var(--primary);
-            box-shadow: 0px 10px 30px rgba(0, 78, 159, 0.08);
-        }
         .feature-selection-card .card-icon {
             font-size: 32px;
             color: var(--on-secondary-container);
@@ -449,6 +440,107 @@ def inject_global_css():
             margin: 0;
             font-size: 13px;
             color: var(--on-surface-variant);
+            line-height: 1.4;
+        }
+
+        /* Target the feature selector radio specifically */
+        [data-testid="stRadioSummary"] { display: none !important; }
+        
+        div[data-testid="stRadio"] > div[role="radiogroup"] {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border: none !important;
+            padding: 0 !important;
+        }
+
+        div[data-testid="stRadio"] > div[role="radiogroup"] label {
+            background-color: #f4f5f7 !important;
+            border-radius: 12px !important;
+            padding: 20px 24px !important;
+            cursor: pointer !important;
+            border: 2px solid transparent !important;
+            transition: all 0.2s ease !important;
+            margin: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            width: 100% !important;
+        }
+
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:hover {
+            background-color: #eceef2 !important;
+            transform: translateX(4px) !important;
+        }
+
+        div[data-testid="stRadio"] > div[role="radiogroup"] label[data-checked="true"] {
+            background-color: #ffffff !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0px 10px 30px rgba(0, 78, 159, 0.08) !important;
+        }
+
+        /* Hide the radio circle and its container */
+        div[data-testid="stRadio"] > div[role="radiogroup"] label div[class*="st-"] {
+            display: none !important;
+        }
+
+        /* Show only the label text container */
+        div[data-testid="stRadio"] > div[role="radiogroup"] label div[data-testid="stWidgetLabel"] {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        div[data-testid="stRadio"] > div[role="radiogroup"] label div[data-testid="stWidgetLabel"] p {
+            font-size: 17px !important;
+            font-weight: 700 !important;
+            color: var(--on-surface) !important;
+            margin-bottom: 4px !important;
+        }
+
+        /* Add icons and descriptions via pseudo-elements based on child order */
+        /* Card 1: Auto-Solver */
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(1)::before {
+            content: 'tune';
+            font-family: 'Material Symbols Outlined' !important;
+            font-size: 32px !important;
+            color: #007f64 !important;
+            margin-bottom: 12px;
+        }
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(1)::after {
+            content: 'Optimasi diameter pipa otomatis berbasis EPyT.';
+            font-size: 13px !important;
+            color: var(--on-surface-variant) !important;
+            line-height: 1.4;
+        }
+
+        /* Card 2: Pressure */
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(2)::before {
+            content: 'valve';
+            font-family: 'Material Symbols Outlined' !important;
+            font-size: 32px !important;
+            color: #007f64 !important;
+            margin-bottom: 12px;
+        }
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(2)::after {
+            content: 'Analisis tekanan node & Triple PRV.';
+            font-size: 13px !important;
+            color: var(--on-surface-variant) !important;
+            line-height: 1.4;
+        }
+
+        /* Card 3: Hardy Cross */
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(3)::before {
+            content: 'account_tree';
+            font-family: 'Material Symbols Outlined' !important;
+            font-size: 32px !important;
+            color: #007f64 !important;
+            margin-bottom: 12px;
+        }
+        div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(3)::after {
+            content: 'Analisis loop jaringan manual.';
+            font-size: 13px !important;
+            color: var(--on-surface-variant) !important;
             line-height: 1.4;
         }
         .status-card,
