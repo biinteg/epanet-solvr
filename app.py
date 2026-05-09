@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # Global CSS adapted from design.md
-st.markdown("""
+st.html("""
     <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
@@ -283,7 +283,7 @@ st.markdown("""
         color: var(--on-surface-variant);
     }
     </style>
-""", unsafe_allow_html=True)
+""")
 
 if "app_started" not in st.session_state:
     st.session_state["app_started"] = False
@@ -292,7 +292,7 @@ if not st.session_state["app_started"]:
     # =====================================================
     # LANDING PAGE
     # =====================================================
-    st.markdown("""
+    st.html("""
         <style>
         /* Hide sidebar and header on landing page */
         [data-testid="collapsedControl"] {display: none;}
@@ -314,7 +314,7 @@ if not st.session_state["app_started"]:
             <h1 class="hero-title">Optimize Your Water Network with Precision</h1>
             <p class="hero-subtitle">Automatically iterate pipe diameters to meet Permen PU No. 18/PRT/M/2007 standards. Save time and ensure compliance effortlessly.</p>
         </div>
-    """, unsafe_allow_html=True)
+    """)
     
     col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 2, 1])
     with col3:
@@ -324,7 +324,7 @@ if not st.session_state["app_started"]:
     with col4:
         st.button("View Documentation", use_container_width=True)
 
-    st.markdown("""
+    st.html("""
         <div class="problem-section">
             <h2 class="problem-headline">Still struggling with manual water network analysis?</h2>
             <p class="problem-subheadline">
@@ -348,9 +348,9 @@ if not st.session_state["app_started"]:
                 </div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+    """)
 
-    st.markdown("""
+    st.html("""
         <div class="bento-grid">
             <div class="bento-card">
                 <div class="bento-icon icon-1"><span class="material-symbols-outlined">autorenew</span></div>
@@ -372,13 +372,13 @@ if not st.session_state["app_started"]:
         <div class="footer">
             © 2026 EPANET Solver. Compliance: Permen PU Standards.
         </div>
-    """, unsafe_allow_html=True)
+    """)
 
 else:
     # =====================================================
     # MAIN APP (UPLOADER & SOLVERS)
     # =====================================================
-    st.markdown("""
+    st.html("""
         <div class="top-nav" style="margin-top: 10px;">
             <div class="nav-brand">EPANET Solver</div>
             <div class="nav-links">
@@ -388,7 +388,7 @@ else:
             </div>
             <div style="font-size: 13px; font-weight: 500; color: var(--primary);">Sign In</div>
         </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Move sidebar navigation here
     st.sidebar.title("EPANET Solver Settings")
@@ -409,7 +409,7 @@ else:
         st.session_state["run_solver"] = False
         st.rerun()
 
-    st.markdown("""
+    st.html("""
         <div class="hero-wrapper" style="padding-top: 20px; padding-bottom: 0px;">
             <h1 class="hero-title">Upload Your Network</h1>
             <p class="hero-subtitle">Drag and drop your .inp file here to begin the optimization process.</p>
@@ -432,7 +432,7 @@ else:
                 <p class="metric-val">Max 10 m/km</p>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+    """)
 
     # Container for uploader
     col1, col2, col3 = st.columns([1, 4, 1])
@@ -489,7 +489,7 @@ else:
                     except:
                         pass
                         
-    st.markdown("""
+    st.html("""
         <div class="footer">
             © 2026 EPANET Solver. Compliance: Permen PU Standards.
         </div>
