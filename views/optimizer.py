@@ -19,8 +19,8 @@ def render():
                 <a class="nav-link" href="#documentation" target="_self">Documentation</a>
             </div>
             <div class="nav-actions" aria-label="Account notifications">
-                <span class="material-symbols-outlined">account_circle</span>
-                <span class="material-symbols-outlined">notifications</span>
+                <span style="font-size: 24px;">👤</span>
+                <span style="font-size: 24px;">🔔</span>
             </div>
         </div>
     """)
@@ -42,7 +42,6 @@ def render():
     with col_left:
         st.markdown("### Select Feature")
         
-        # We use a clean radio and handle styling in CSS via the key
         feature_options = [
             "Auto-Solver",
             "Pressure & Auto-PRV",
@@ -63,17 +62,17 @@ def render():
         st.html("""
             <div class="feature-selection-container">
                 <div class="feature-selection-card" style="padding: 16px;">
-                    <span class="material-symbols-outlined card-icon" style="color:#007f64; margin-bottom:8px;">speed</span>
+                    <div style="font-size: 32px; margin-bottom: 8px;">🌡️</div>
                     <h4 style="font-size:14px;">Pressure</h4>
                     <p style="font-size:12px;">10 - 80m</p>
                 </div>
                 <div class="feature-selection-card" style="padding: 16px;">
-                    <span class="material-symbols-outlined card-icon" style="color:#007f64; margin-bottom:8px;">water_drop</span>
+                    <div style="font-size: 32px; margin-bottom: 8px;">💧</div>
                     <h4 style="font-size:14px;">Velocity</h4>
                     <p style="font-size:12px;">0.3 - 2.5 m/s</p>
                 </div>
                 <div class="feature-selection-card" style="padding: 16px;">
-                    <span class="material-symbols-outlined card-icon" style="color:#007f64; margin-bottom:8px;">timeline</span>
+                    <div style="font-size: 32px; margin-bottom: 8px;">📉</div>
                     <h4 style="font-size:14px;">Headloss</h4>
                     <p style="font-size:12px;">Max 10 m/km</p>
                 </div>
@@ -85,7 +84,7 @@ def render():
             <div class="optimizer-workspace" style="margin-top: 0; grid-template-columns: 1fr;">
                 <div class="log-card">
                     <div class="log-head">
-                        <h3><span class="material-symbols-outlined" style="color:#0066cc;">terminal</span> Live Optimization Log</h3>
+                        <h3>💻 Live Optimization Log</h3>
                         <span class="engine-pill">{selected_engine} Engine</span>
                     </div>
                     <div class="log-console">

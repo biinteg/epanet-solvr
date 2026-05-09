@@ -14,8 +14,8 @@ def render():
                 <a class="nav-link" href="#documentation" target="_self">Documentation</a>
             </div>
             <div class="nav-actions" aria-label="Account notifications">
-                <span class="material-symbols-outlined">account_circle</span>
-                <span class="material-symbols-outlined">notifications</span>
+                <span style="font-size: 24px;">👤</span>
+                <span style="font-size: 24px;">🔔</span>
             </div>
         </div>
 
@@ -53,17 +53,17 @@ def render():
             </p>
             <div class="pain-points-grid">
                 <div class="pain-point-card">
-                    <div class="pain-point-icon"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">schedule</span></div>
+                    <div class="pain-point-icon" style="font-size: 40px;">🕒</div>
                     <h3 class="pain-point-title">Wasted Time</h3>
                     <p class="pain-point-desc">Hours spent manually updating pipe sizes and re-running simulations for every minor network change.</p>
                 </div>
                 <div class="pain-point-card">
-                    <div class="pain-point-icon"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span></div>
+                    <div class="pain-point-icon" style="font-size: 40px;">⚠️</div>
                     <h3 class="pain-point-title">Compliance Risks</h3>
                     <p class="pain-point-desc">Difficulty ensuring all nodes and links meet the strict pressure and velocity standards of Permen PU No. 18/PRT/M/2007.</p>
                 </div>
                 <div class="pain-point-card">
-                    <div class="pain-point-icon"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span></div>
+                    <div class="pain-point-icon" style="font-size: 40px;">📊</div>
                     <h3 class="pain-point-title">Suboptimal Design</h3>
                     <p class="pain-point-desc">Trial-and-error approaches often lead to oversized pipes, unnecessarily increasing project construction costs.</p>
                 </div>
@@ -74,17 +74,17 @@ def render():
     st.html("""
         <div class="bento-grid">
             <div class="bento-card">
-                <div class="bento-icon icon-1"><span class="material-symbols-outlined">autorenew</span></div>
+                <div class="bento-icon icon-1" style="font-size: 32px;">🔄</div>
                 <h3 class="bento-title">Auto-Iterate</h3>
                 <p class="bento-text">Melakukan iterasi penggantian diameter pipa secara otomatis. Menggunakan daftar ukuran standar pipa komersial: 40 mm hingga 315 mm.</p>
             </div>
             <div class="bento-card">
-                <div class="bento-icon icon-2"><span class="material-symbols-outlined">verified_user</span></div>
+                <div class="bento-icon icon-2" style="font-size: 32px;">✅</div>
                 <h3 class="bento-title">Hydraulic Compliance</h3>
                 <p class="bento-text">Mengevaluasi kondisi hidrolis ketat berdasarkan Permen PU No. 18/PRT/M/2007 untuk tekanan, kecepatan, dan headloss.</p>
             </div>
             <div class="bento-card">
-                <div class="bento-icon icon-3"><span class="material-symbols-outlined">download</span></div>
+                <div class="bento-icon icon-3" style="font-size: 32px;">📥</div>
                 <h3 class="bento-title">Instant .inp Export</h3>
                 <p class="bento-text">Setelah selesai, unduh file .inp baru yang diameternya telah dioptimasi, siap digunakan kembali di EPANET Desktop.</p>
             </div>
