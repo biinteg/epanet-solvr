@@ -256,11 +256,23 @@ def render():
 
             elif res["type"] == "pressure":
                 st.markdown("### 📊 Diagnosis Tekanan")
-                st.dataframe(res["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
                 if "prv_results" in res:
-                    st.success(f"Best PRV Combo: {', '.join(res['prv_results']['best_combo'])}")
-                    with open(res["prv_results"]["inp_path"], "rb") as f:
-                        st.download_button("📥 Download Triple PRV Result", data=f, file_name="PRV_Result.inp", use_container_width=True)
+                    st.success(f"✅ Triple PRV Optimization Complete. Best combo: {', '.join(res['prv_results']['best_combo'])}")
+                    
+                    tabs_p = st.tabs(["📊 Pressure Comparison", "🗺️ Final Map"])
+                    with tabs_p[0]:
+                        df_comp = res["prv_results"]["df_compare"]
+                        st.dataframe(df_comp.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                        
+                        # Download button
+                        with open(res["prv_results"]["inp_path"], "rb") as f:
+                            st.download_button("📥 Download Optimized Network (.inp)", data=f, file_name="PRV_Optimized_Result.inp", use_container_width=True)
+                    
+                    with tabs_p[1]:
+                        tampilkan_network(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Final Network with Triple PRV")
+                else:
+                    st.warning("⚠️ No Triple PRV combination found that improves the network or matches the safety criteria.")
+                    st.dataframe(res["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
 
             elif res["type"] == "auto_solver":
                 st.markdown("### 📊 Ringkasan Optimasi Diameter")

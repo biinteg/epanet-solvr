@@ -61,6 +61,7 @@ def run_pressure_analysis(tmp_path, target_prv=50.0, run_triple_prv=False):
         if len(kandidat_pipa) >= 3:
             combos = list(combinations(kandidat_pipa, 3))
             best_score = -1; best_combo = None; best_result = {}; best_network = None
+            best_aman = 0; best_high = 0; best_low = 0
 
             for combo in combos:
                 try:
@@ -91,6 +92,9 @@ def run_pressure_analysis(tmp_path, target_prv=50.0, run_triple_prv=False):
                         best_combo = combo
                         best_result = tekanan
                         best_network = wn_test
+                        best_aman = aman
+                        best_high = high_count
+                        best_low = low_count
                 except: continue
 
             if best_combo:
@@ -121,9 +125,9 @@ def run_pressure_analysis(tmp_path, target_prv=50.0, run_triple_prv=False):
                      "best_result": best_result,
                      "inp_path": new_inp,
                      "score_details": {
-                         "safe_nodes": aman,
-                         "high_pressure_nodes": high_count,
-                         "low_pressure_nodes": low_count
+                         "safe_nodes": best_aman,
+                         "high_pressure_nodes": best_high,
+                         "low_pressure_nodes": best_low
                      }
                 }
     
