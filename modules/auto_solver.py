@@ -4,6 +4,7 @@ import streamlit as st
 from epyt import epanet
 # pyrefly: ignore [missing-import]
 import pandas as pd
+import os
 from modules.helpers import (
     MAX_HEADLOSS_M_PER_KM,
     MAX_VELOCITY_MS,
@@ -11,14 +12,11 @@ from modules.helpers import (
     warnai_status_solver,
 )
 
-
 def run_auto_solver(tmp_path):
-    st.write(
-        "Optimasi diameter otomatis berdasarkan "
-        f"Permen PU No. 18/PRT/M/2007: kecepatan {MIN_VELOCITY_MS}-{MAX_VELOCITY_MS} m/s "
-        f"dan headloss <= {MAX_HEADLOSS_M_PER_KM} m/km."
-    )
-
+    """
+    Runs the auto-solver and returns a dictionary with the results dataframe,
+    summary metrics, and the path to the optimized INP file.
+    """
     d = None
     try:
         d = epanet(tmp_path)
@@ -29,8 +27,6 @@ def run_auto_solver(tmp_path):
 
         # Iterasi optimasi
         for iterasi in range(5):
-            st.info(f"Iterasi optimasi {iterasi+1}/5")
-
             d.openHydraulicAnalysis()
             d.runHydraulicAnalysis()
             d.closeHydraulicAnalysis()
@@ -98,30 +94,21 @@ def run_auto_solver(tmp_path):
             })
 
         df = pd.DataFrame(hasil)
-
-        st.markdown("### Ringkasan Optimasi")
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Total Pipa", len(link_ids))
-        c2.metric("Diubah", berubah)
-        c3.metric("Pipa Sesuai", f"{patuh}/{len(link_ids)}")
-
-        st.dataframe(
-            df.style.map(warnai_status_solver, subset=["Status Optimasi"]),
-            use_container_width=True,
-            height=400
-        )
-
-        # Download hasil
+        
+        # Save optimized INP
         new_inp = tmp_path.replace(".inp", "_optimized.inp")
         d.saveInputFile(new_inp)
 
-        with open(new_inp, "rb") as file:
-            st.download_button(
-                "Unduh File Optimasi",
-                data=file,
-                file_name="Jaringan_Optimasi.inp",
-                mime="text/plain"
-            )
+        # Return results to view
+        return {
+            "df": df,
+            "metrics": {
+                "total": len(link_ids),
+                "changed": berubah,
+                "compliant": patuh
+            },
+            "inp_file_path": new_inp
+        }
 
     finally:
         if d:

@@ -3,21 +3,25 @@ import streamlit as st
 import tempfile
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from views import styles
 from modules.auto_solver import run_auto_solver
 from modules.pressure_analysis import run_pressure_analysis
 from modules.hardy_cross import run_hardy_cross
+from modules.helpers import warnai_status_solver
 
 def add_log(msg, type='info'):
     if "log_history" not in st.session_state:
         st.session_state["log_history"] = []
     
-    timestamp = datetime.now().strftime("%H:%M:%S")
+    # Manually adjust to UTC+7 (WIB) to match user device time
+    # This is a robust way to ensure sync with Indonesian local time
+    local_now = datetime.utcnow() + timedelta(hours=7)
+    timestamp = local_now.strftime("%H:%M:%S")
+    
     color = "#66d39b" if type == 'success' else "#ff4b4b" if type == 'error' else "#cfd6d4"
     log_entry = f'<span style="color: {color};">{timestamp} {msg}</span>'
     st.session_state["log_history"].append(log_entry)
-    # Keep only last 10 logs for performance
     if len(st.session_state["log_history"]) > 15:
         st.session_state["log_history"].pop(0)
 
@@ -25,10 +29,9 @@ def render():
     styles.inject_optimizer_styles()
 
     if "log_history" not in st.session_state:
-        st.session_state["log_history"] = [
-            '<span style="color: #cfd6d4;">Initializing EPANET workspace...</span>',
-            '<span style="color: #cfd6d4;">Ready for network upload.</span>'
-        ]
+        st.session_state["log_history"] = []
+        add_log("Initializing EPANET workspace...")
+        add_log("Ready for network upload.")
 
     st.html("""
         <div class="top-nav">
@@ -38,7 +41,7 @@ def render():
                 <a class="nav-link active" href="?page=optimizer" target="_self">Optimizer</a>
                 <a class="nav-link" href="#documentation" target="_self">Documentation</a>
             </div>
-            <div class="nav-actions" aria-label="Account notifications">
+            <div class="nav-actions">
                 <span style="font-size: 24px;">👤</span>
                 <span style="font-size: 24px;">🔔</span>
             </div>
@@ -56,30 +59,20 @@ def render():
         </div>
     """)
 
-    # Main Layout: Sidebar-like left column and Workspace right column
     col_left, col_right = st.columns([1, 2.8], gap="large")
 
     with col_left:
         st.markdown("### Select Feature")
+        feature_options = ["Auto-Solver", "Pressure & Auto-PRV", "Hardy Cross"]
         
-        feature_options = [
-            "Auto-Solver",
-            "Pressure & Auto-PRV",
-            "Hardy Cross"
-        ]
-        
-        # Detect selection change to add log
         old_menu = st.session_state.get("last_selected_feature", "")
-        menu = st.radio(
-            "Pilih fitur optimizer",
-            feature_options,
-            label_visibility="collapsed",
-            key="feature_selector"
-        )
+        menu = st.radio("Pilih fitur optimizer", feature_options, label_visibility="collapsed", key="feature_selector")
         
         if menu != old_menu:
             st.session_state["last_selected_feature"] = menu
             add_log(f"Feature selected: {menu}")
+            if "solver_results" in st.session_state:
+                del st.session_state["solver_results"]
         
         selected_engine = "EPyT" if "Auto-Solver" in menu else "WNTR" if "Pressure" in menu else "Manual Loop"
         
@@ -106,7 +99,6 @@ def render():
         """)
 
     with col_right:
-        # Live Terminal Component
         log_content = "<br>".join(st.session_state["log_history"])
         st.html(f"""
             <div class="optimizer-workspace" style="margin-top: 0; grid-template-columns: 1fr;">
@@ -136,62 +128,74 @@ def render():
         if uploaded_file:
             if "file_logged" not in st.session_state or st.session_state.file_logged != uploaded_file.name:
                 add_log(f"File uploaded: {uploaded_file.name}", 'success')
-                add_log("Validating network topology...")
                 st.session_state.file_logged = uploaded_file.name
+                if "solver_results" in st.session_state:
+                    del st.session_state["solver_results"]
 
-        if uploaded_file is None:
-            st.info("Pilih fitur optimizer di kiri, lalu unggah file .inp untuk memulai.")
-            st.session_state['run_solver'] = False
+        col_btn1, col_btn2 = st.columns([2, 1])
+        with col_btn1:
+            start_clicked = st.button("Start Optimization  →", type="primary", use_container_width=True, disabled=uploaded_file is None)
+        with col_btn2:
+            if st.button("Clear Dashboard", use_container_width=True):
+                if "solver_results" in st.session_state:
+                    del st.session_state["solver_results"]
+                st.session_state["log_history"] = []
+                add_log("Workspace reset.")
+                st.rerun()
 
-        action_mid = st.container()
-        with action_mid:
-            start_clicked = st.button(
-                "Start Optimization  →",
-                type="primary",
-                use_container_width=True,
-                disabled=uploaded_file is None,
-                key="start_opt_btn"
-            )
-
-        if uploaded_file is not None:
-            if start_clicked:
-                st.session_state['run_solver'] = True
-                add_log(f"Starting {menu} Engine...", 'info')
-                
-        if st.session_state.get('run_solver', False):
+        if start_clicked:
+            add_log(f"Initiating {menu} Engine...", 'info')
             with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
                 # pyrefly: ignore [missing-attribute]
                 tmp.write(uploaded_file.getvalue())
                 tmp_path = tmp.name
 
             try:
-                # Since we can't easily pass callback to existing modules without refactoring them,
-                # we'll add dummy progress logs here for effect, then run the actual solver.
-                add_log("Analyzing link diameters...")
-                add_log("Running hydraulic simulations...")
-                
-                with st.spinner(f"Optimizing Network... using {menu}"):
+                add_log("Preprocessing network data...")
+                with st.spinner(f"Optimizing..."):
                     if "Auto-Solver" in menu:
-                        run_auto_solver(tmp_path)
-                    elif "Pressure" in menu:
-                        run_pressure_analysis(tmp_path)
-                    elif "Hardy Cross" in menu:
-                        run_hardy_cross(tmp_path)
-                
-                add_log("Optimization complete!", 'success')
-                st.session_state['run_solver'] = False
-                st.rerun() # Refresh to show logs
+                        results = run_auto_solver(tmp_path)
+                        st.session_state["solver_results"] = results
+                        add_log("Optimization successfully completed.", 'success')
+                    else:
+                        st.warning("Selected feature is currently in development.")
+                        add_log("Feature not yet supported.", 'error')
+                st.rerun()
 
             except Exception as e:
-                add_log(f"Error: {str(e)}", 'error')
-                st.error(f"Gagal menjalankan analisis: {str(e)}")
-                st.session_state['run_solver'] = False
+                add_log(f"Critical Error: {str(e)}", 'error')
+                st.error(f"Failed to process: {str(e)}")
             finally:
                 if os.path.exists(tmp_path):
-                    try:
-                        os.remove(tmp_path)
-                    except:
-                        pass
+                    try: os.remove(tmp_path)
+                    except: pass
+
+        # Persistent Results Section
+        if "solver_results" in st.session_state:
+            res = st.session_state["solver_results"]
+            st.markdown("---")
+            st.markdown("### 📊 Ringkasan Hasil Optimasi")
+            
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Total Pipa", res["metrics"]["total"])
+            m2.metric("Pipa Dimodifikasi", res["metrics"]["changed"])
+            m3.metric("Kepatuhan Permen PU", f"{res['metrics']['compliant']}/{res['metrics']['total']}")
+
+            st.dataframe(
+                res["df"].style.map(warnai_status_solver, subset=["Status Optimasi"]),
+                use_container_width=True,
+                height=400
+            )
+
+            if os.path.exists(res["inp_file_path"]):
+                with open(res["inp_file_path"], "rb") as f:
+                    st.download_button(
+                        "📥 Download Optimized Network (.inp)",
+                        data=f,
+                        file_name="Optimized_Network.inp",
+                        mime="text/plain",
+                        use_container_width=True
+                    )
 
     st.html("""
         <div class="footer">
