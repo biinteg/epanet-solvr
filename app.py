@@ -493,4 +493,4 @@ else:
         <div class="footer">
             © 2026 EPANET Solver. Compliance: Permen PU Standards.
         </div>
-    """, unsafe_allow_html=True)
+    """)
