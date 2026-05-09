@@ -503,7 +503,18 @@ def inject_global_css():
         div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(1)::before {
             content: 'tune';
             font-family: 'Material Symbols Outlined' !important;
+            font-weight: normal !important;
+            font-style: normal !important;
             font-size: 32px !important;
+            line-height: 1 !important;
+            display: inline-block !important;
+            direction: ltr !important;
+            word-wrap: normal !important;
+            white-space: nowrap !important;
+            -webkit-font-smoothing: antialiased !important;
+            text-rendering: optimizeLegibility !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            font-feature-settings: 'liga' !important;
             color: #007f64 !important;
             margin-bottom: 12px;
         }
@@ -518,7 +529,18 @@ def inject_global_css():
         div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(2)::before {
             content: 'valve';
             font-family: 'Material Symbols Outlined' !important;
+            font-weight: normal !important;
+            font-style: normal !important;
             font-size: 32px !important;
+            line-height: 1 !important;
+            display: inline-block !important;
+            direction: ltr !important;
+            word-wrap: normal !important;
+            white-space: nowrap !important;
+            -webkit-font-smoothing: antialiased !important;
+            text-rendering: optimizeLegibility !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            font-feature-settings: 'liga' !important;
             color: #007f64 !important;
             margin-bottom: 12px;
         }
@@ -533,7 +555,18 @@ def inject_global_css():
         div[data-testid="stRadio"] > div[role="radiogroup"] label:nth-child(3)::before {
             content: 'account_tree';
             font-family: 'Material Symbols Outlined' !important;
+            font-weight: normal !important;
+            font-style: normal !important;
             font-size: 32px !important;
+            line-height: 1 !important;
+            display: inline-block !important;
+            direction: ltr !important;
+            word-wrap: normal !important;
+            white-space: nowrap !important;
+            -webkit-font-smoothing: antialiased !important;
+            text-rendering: optimizeLegibility !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            font-feature-settings: 'liga' !important;
             color: #007f64 !important;
             margin-bottom: 12px;
         }
