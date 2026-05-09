@@ -109,3 +109,49 @@ def tampilkan_network(wn, tekanan_dict=None, judul="Visualisasi Jaringan"):
     plt.tight_layout()
     st.pyplot(fig)
     plt.close(fig)
+
+def tampilkan_skema_jaringan(wn, judul="Skema Jaringan"):
+    """
+    Menampilkan skema jaringan dengan tampilan bersih:
+    - Junction: Titik Biru
+    - Reservoir: Titik Merah
+    - Pipa: Garis Biru Tipis
+    - Tanpa axes/grid (Style Premium)
+    """
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    # 1. Plot Pipes (Steelblue thin lines)
+    wntr.graphics.plot_network(wn, ax=ax, node_size=0, link_width=1.5, link_color='royalblue')
+    
+    # 2. Plot Junctions (Blue dots)
+    junction_coords = []
+    for name in wn.junction_name_list:
+        junction_coords.append(wn.get_node(name).coordinates)
+    if junction_coords:
+        junction_coords = np.array(junction_coords)
+        ax.scatter(junction_coords[:,0], junction_coords[:,1], c='blue', s=40, label='JUNCTION', zorder=5)
+        
+    # 3. Plot Reservoirs (Red dots)
+    res_coords = []
+    for name in wn.reservoir_name_list:
+        res_coords.append(wn.get_node(name).coordinates)
+    if res_coords:
+        res_coords = np.array(res_coords)
+        ax.scatter(res_coords[:,0], res_coords[:,1], c='red', s=60, label='RESERVOIR', zorder=6)
+        
+    # 4. Plot Tanks (Green dots if any)
+    tank_coords = []
+    for name in wn.tank_name_list:
+        tank_coords.append(wn.get_node(name).coordinates)
+    if tank_coords:
+        tank_coords = np.array(tank_coords)
+        ax.scatter(tank_coords[:,0], tank_coords[:,1], c='forestgreen', s=60, label='TANK', zorder=6)
+
+    # Styling
+    ax.set_title(judul, fontsize=16, pad=20, fontweight='bold')
+    ax.legend(loc='upper right', frameon=False, fontsize=10)
+    ax.set_axis_off() # Menghilangkan axes agar bersih seperti di gambar
+    
+    plt.tight_layout()
+    st.pyplot(fig)
+    plt.close(fig)
