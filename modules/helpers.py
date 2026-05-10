@@ -145,18 +145,14 @@ def tampilkan_network_plotly(wn, tekanan_dict=None, judul="Interactive Network V
         node_x.append(x)
         node_y.append(y)
         
+    node_pressures_numeric = []
+    for node_name in wn.node_name_list:
         p = tekanan_dict.get(node_name, 0) if tekanan_dict is not None else 0
         if pd.isna(p): p = 0
+        node_pressures_numeric.append(p)
         
         info = f"Node: {node_name}<br>Pressure: {p:.2f} m"
         node_text.append(info)
-        
-        if p < MIN_PRESSURE_M:
-            node_color.append('red')
-        elif p > MAX_PRESSURE_M:
-            node_color.append('orange')
-        else:
-            node_color.append('limegreen')
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
@@ -167,7 +163,7 @@ def tampilkan_network_plotly(wn, tekanan_dict=None, judul="Interactive Network V
             showscale=True,
             colorscale='RdYlGn',
             reversescale=False,
-            color=node_color,
+            color=node_pressures_numeric,
             size=14,
             colorbar=dict(
                 thickness=15,
