@@ -49,17 +49,22 @@ def run_auto_solver(tmp_path):
             node_p_map = {node_ids[j]: pressures[j] for j in range(len(node_ids))}
 
             for i in range(len(link_ids)):
+                link_info = wn.get_link(link_ids[i])
+                length_km = link_info.length / 1000.0 if link_info.length > 0 else 1.0
+                
                 v = abs(velocity[i])
-                h = abs(headloss[i])
+                # Convert total headloss to headloss per km (m/km)
+                h_grad = abs(headloss[i]) / length_km
+                
                 d_now = d.getLinkDiameter(i + 1)
                 d_new = d_now
 
-                # Logic dasar: Atur diameter berdasarkan velocity dan headloss
+                # Logic dasar: Atur diameter berdasarkan velocity dan headloss gradient
                 if 0.001 < v < MIN_VELOCITY_MS:
                     kandidat = [x for x in standar_pipa if x < d_now]
                     if kandidat:
                         d_new = max(kandidat)
-                elif v > MAX_VELOCITY_MS or h > MAX_HEADLOSS_M_PER_KM:
+                elif v > MAX_VELOCITY_MS or h_grad > MAX_HEADLOSS_M_PER_KM:
                     kandidat = [x for x in standar_pipa if x > d_now]
                     if kandidat:
                         d_new = min(kandidat)
@@ -67,12 +72,11 @@ def run_auto_solver(tmp_path):
                 # TAMBAHAN: Proteksi Tekanan
                 # Jika diameter diperkecil, cek apakah tekanan di node hilir masih aman
                 if d_new < d_now:
-                    link_info = wn.get_link(link_ids[i])
                     # Ambil node end (hilir biasanya)
                     end_node = link_info.end_node_name
                     p_hilir = node_p_map.get(end_node, 100)
                     
-                    if p_hilir < 15: # Safety margin: 15m (lebih tinggi dari limit 10m)
+                    if p_hilir < 11: # Safety margin: 11m (lebih realistis dibanding 15m, limit tetap 10m)
                         d_new = d_now # Batal diperkecil demi menjaga tekanan
                 
                 if d_new != d_now:
@@ -91,11 +95,15 @@ def run_auto_solver(tmp_path):
         patuh = 0
 
         for i in range(len(link_ids)):
+            link_info = wn.get_link(link_ids[i])
+            length_km = link_info.length / 1000.0 if link_info.length > 0 else 1.0
+
             awal = diameter_awal[i]
             akhir = d.getLinkDiameter(i + 1)
             v = abs(final_velocity[i])
-            h = abs(final_headloss[i])
-            sesuai_permen = MIN_VELOCITY_MS <= v <= MAX_VELOCITY_MS and h <= MAX_HEADLOSS_M_PER_KM
+            h_grad = abs(final_headloss[i]) / length_km
+            
+            sesuai_permen = MIN_VELOCITY_MS <= v <= MAX_VELOCITY_MS and h_grad <= MAX_HEADLOSS_M_PER_KM
 
             if akhir > awal:
                 status = "Diperbesar"
@@ -118,7 +126,7 @@ def run_auto_solver(tmp_path):
                 "Diameter Awal": f"{awal:.0f} mm",
                 "Diameter Baru": f"{akhir:.0f} mm",
                 "Velocity": f"{v:.3f} m/s",
-                "Headloss": f"{h:.3f} m/km",
+                "Headloss": f"{h_grad:.3f} m/km",
                 "Status": status,
                 "Compliance": "Aman" if sesuai_permen else "Tidak Aman"
             })
