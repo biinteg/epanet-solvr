@@ -202,8 +202,8 @@ def tampilkan_skema_jaringan(wn, judul="Skema Jaringan"):
     """
     fig, ax = plt.subplots(figsize=(12, 8))
     
-    # 1. Plot Pipes (Light grey)
-    wntr.graphics.plot_network(wn, ax=ax, node_size=0, link_width=1.2, link_color='#d1d8e0')
+    # 1. Plot Pipes (Default grey)
+    wntr.graphics.plot_network(wn, ax=ax, node_size=0, link_width=1.2)
     
     # 2. Plot Junctions (Clean blue dots)
     junction_coords = []
