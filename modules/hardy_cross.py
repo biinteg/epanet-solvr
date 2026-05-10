@@ -25,13 +25,30 @@ def run_hardy_cross(inp_path):
         
         # Build Graph
         G = nx.MultiGraph()
-        link_ids = d.getLinkNameID()
-        node_ids = d.getNodeNameID()
+        # Link properties from wntr
+        link_ids = wn_topo.link_name_list
+        node_ids = wn_topo.node_name_list
         
-        # Link properties
-        diameters = d.getLinkDiameter()
-        lengths = d.getLinkLength()
-        roughness = d.getLinkRoughness()
+        diameters = []
+        lengths = []
+        roughness = []
+        
+        for l_name in link_ids:
+            link = wn_topo.get_link(l_name)
+            # Use wntr properties (SI units assumed for diameter in wntr: meters)
+            # EPANET .inp usually has diameter in mm for SI, but wntr converts to meters internally.
+            # However, my Hardy Cross formula expects mm or meters? 
+            # Hardy Cross formula used later: R = 10.67 * L / ((C**1.852) * (D**4.87))
+            # If D is in meters, the result is in SI.
+            
+            if hasattr(link, 'diameter'):
+                diameters.append(link.diameter) # wntr uses meters
+                lengths.append(link.length)
+                roughness.append(link.roughness)
+            else:
+                diameters.append(0)
+                lengths.append(0)
+                roughness.append(0)
 
         # Build a mapping of link name -> (start_node, end_node) using wntr
         link_nodes_map = {}
@@ -46,25 +63,23 @@ def run_hardy_cross(inp_path):
             if diameters[l_idx] > 0 and lengths[l_idx] > 0:
                 G.add_edge(u_name, v_name, key=l_name)
 
-        reservoir_names = d.getNodeReservoirNameID()
-        tank_names = d.getNodeTankNameID()
-        junction_names = d.getNodeJunctionNameID()
+        reservoir_names = wn_topo.reservoir_name_list
+        tank_names = wn_topo.tank_name_list
+        junction_names = wn_topo.junction_name_list
         
         source_node = reservoir_names[0] if reservoir_names else tank_names[0] if tank_names else None
         if not source_node:
             raise Exception("Jaringan harus memiliki minimal 1 Reservoir atau Tangki.")
 
-        # Demands
-        all_node_names = d.getNodeNameID()
-        base_demands = d.getNodeBaseDemands() # returns list of lists or similar depending on patterns
-        # For simplicity in unit tests, we take the first demand value if it's a list
+        # Demands from wntr
         demands = {}
-        for i, n_name in enumerate(all_node_names):
-            val = base_demands[i]
-            if isinstance(val, list):
-                demands[n_name] = val[0] if val else 0.0
+        for n_name in node_ids:
+            node = wn_topo.get_node(n_name)
+            if hasattr(node, 'demand_timeseries_list') and node.demand_timeseries_list:
+                # Get the first demand value
+                demands[n_name] = node.demand_timeseries_list[0].base_value
             else:
-                demands[n_name] = val
+                demands[n_name] = 0.0
         
         for r_name in reservoir_names + tank_names: 
             demands[r_name] = 0.0
