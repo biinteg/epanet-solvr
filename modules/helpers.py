@@ -174,8 +174,7 @@ def tampilkan_network_plotly(wn, tekanan_dict=None, judul="Interactive Network V
 
     fig = go.Figure(data=[edge_trace, node_trace],
                  layout=go.Layout(
-                    title=judul,
-                    titlefont_size=20,
+                    title={'text': judul, 'font': {'size': 20}},
                     showlegend=False,
                     hovermode='closest',
                     margin=dict(b=20,l=5,r=5,t=60),
