@@ -167,9 +167,7 @@ def tampilkan_network_plotly(wn, tekanan_dict=None, judul="Interactive Network V
             size=14,
             colorbar=dict(
                 thickness=15,
-                title='Pressure (m)',
-                xanchor='left',
-                titleside='right'
+                title='Pressure (m)'
             ),
             line_width=2,
             line_color='white'))
