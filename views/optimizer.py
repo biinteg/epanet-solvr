@@ -8,7 +8,13 @@ from views import styles
 from modules.auto_solver import run_auto_solver
 from modules.pressure_analysis import run_pressure_analysis
 from modules.hardy_cross import run_hardy_cross
-from modules.helpers import warnai_status_solver, warnai_status_tekanan, tampilkan_network, tampilkan_skema_jaringan
+from modules.helpers import (
+    warnai_status_solver, 
+    warnai_status_tekanan, 
+    tampilkan_network, 
+    tampilkan_network_plotly,
+    tampilkan_skema_jaringan
+)
 
 def add_log(msg, type='info'):
     if "log_history" not in st.session_state:
@@ -247,9 +253,14 @@ def render():
                             st.dataframe(df2_awal, use_container_width=True)
                 with tabs[2]:
                     st.markdown("### Visualisasi Akhir")
+                    viz_mode = st.radio("Mode Visualisasi", ["Static Map", "Interactive (Plotly)"], horizontal=True, key="ultra_viz")
                     final_network = res["stage2"]["prv_results"]["best_network"] if "prv_results" in res["stage2"] else res["stage2"]["wn_initial"]
                     final_pressures = res["stage2"]["prv_results"]["best_result"] if "prv_results" in res["stage2"] else res["stage2"]["tekanan_awal"]
-                    tampilkan_network(final_network, final_pressures, "Network Topology After Ultra Optimization")
+                    
+                    if viz_mode == "Static Map":
+                        tampilkan_network(final_network, final_pressures, "Network Topology After Ultra Optimization")
+                    else:
+                        tampilkan_network_plotly(final_network, final_pressures, "Interactive Topology (Hover to see Pressure)")
                     
                 with open(res["final_inp"], "rb") as f:
                     st.download_button("📥 DOWNLOAD ULTRA OPTIMIZED NETWORK (.inp)", data=f, file_name="Ultra_Optimized_Result.inp", mime="text/plain", use_container_width=True)
@@ -269,7 +280,11 @@ def render():
                             st.download_button("📥 Download Optimized Network (.inp)", data=f, file_name="PRV_Optimized_Result.inp", use_container_width=True)
                     
                     with tabs_p[1]:
-                        tampilkan_network(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Final Network with Triple PRV")
+                        viz_mode_p = st.radio("Mode Visualisasi", ["Static Map", "Interactive (Plotly)"], horizontal=True, key="press_viz")
+                        if viz_mode_p == "Static Map":
+                            tampilkan_network(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Final Network with Triple PRV")
+                        else:
+                            tampilkan_network_plotly(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Interactive Pressure Map")
                 else:
                     st.warning("⚠️ No Triple PRV combination found that improves the network or matches the safety criteria.")
                     st.dataframe(res["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)

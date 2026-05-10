@@ -8,6 +8,8 @@ import numpy as np
 import wntr
 # pyrefly: ignore [missing-import]
 import streamlit as st
+import plotly.graph_objects as go
+import plotly.express as px
 
 MIN_PRESSURE_M = 10
 MAX_PRESSURE_M = 80
@@ -105,10 +107,90 @@ def tampilkan_network(wn, tekanan_dict=None, judul="Visualisasi Jaringan"):
     # Styling tambahan
     ax.set_xlabel("X (m)", fontsize=12, fontweight='bold')
     ax.set_ylabel("Y (m)", fontsize=12, fontweight='bold')
-    ax.grid(True, alpha=0.3)
+    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.set_facecolor('#fdfdfd')
     plt.tight_layout()
     st.pyplot(fig)
     plt.close(fig)
+
+def tampilkan_network_plotly(wn, tekanan_dict=None, judul="Interactive Network Visualization"):
+    """Menampilkan jaringan menggunakan Plotly agar interaktif (bisa zoom/hover)"""
+    
+    edge_x = []
+    edge_y = []
+    for edge in wn.links():
+        start_node = wn.get_node(edge[1].start_node_name)
+        end_node = wn.get_node(edge[1].end_node_name)
+        x0, y0 = start_node.coordinates
+        x1, y1 = end_node.coordinates
+        edge_x.extend([x0, x1, None])
+        edge_y.extend([y0, y1, None])
+
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=1, color='#888'),
+        hoverinfo='none',
+        mode='lines')
+
+    node_x = []
+    node_y = []
+    node_text = []
+    node_color = []
+    
+    for node_name in wn.node_name_list:
+        node = wn.get_node(node_name)
+        x, y = node.coordinates
+        node_x.append(x)
+        node_y.append(y)
+        
+        p = tekanan_dict.get(node_name, 0) if tekanan_dict else 0
+        if pd.isna(p): p = 0
+        
+        info = f"Node: {node_name}<br>Pressure: {p:.2f} m"
+        node_text.append(info)
+        
+        if p < MIN_PRESSURE_M:
+            node_color.append('red')
+        elif p > MAX_PRESSURE_M:
+            node_color.append('orange')
+        else:
+            node_color.append('limegreen')
+
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers',
+        hoverinfo='text',
+        text=node_text,
+        marker=dict(
+            showscale=True,
+            colorscale='RdYlGn',
+            reversescale=False,
+            color=node_color,
+            size=14,
+            colorbar=dict(
+                thickness=15,
+                title='Pressure (m)',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2,
+            line_color='white'))
+
+    fig = go.Figure(data=[edge_trace, node_trace],
+                 layout=go.Layout(
+                    title=judul,
+                    titlefont_size=20,
+                    showlegend=False,
+                    hovermode='closest',
+                    margin=dict(b=20,l=5,r=5,t=60),
+                    xaxis=dict(showgrid=True, zeroline=False, showticklabels=False, gridcolor='#eee'),
+                    yaxis=dict(showgrid=True, zeroline=False, showticklabels=False, gridcolor='#eee'),
+                    template='plotly_white',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)'
+                ))
+    
+    st.plotly_chart(fig, use_container_width=True)
 
 def tampilkan_skema_jaringan(wn, judul="Skema Jaringan"):
     """
@@ -120,36 +202,51 @@ def tampilkan_skema_jaringan(wn, judul="Skema Jaringan"):
     """
     fig, ax = plt.subplots(figsize=(12, 8))
     
-    wntr.graphics.plot_network(wn, ax=ax, node_size=0, link_width=1.5)
+    # 1. Plot Pipes (Light grey)
+    wntr.graphics.plot_network(wn, ax=ax, node_size=0, link_width=1.2, link_color='#d1d8e0')
     
-    # 2. Plot Junctions (Blue dots)
+    # 2. Plot Junctions (Clean blue dots)
     junction_coords = []
     for name in wn.junction_name_list:
         junction_coords.append(wn.get_node(name).coordinates)
     if junction_coords:
         junction_coords = np.array(junction_coords)
-        ax.scatter(junction_coords[:,0], junction_coords[:,1], c='blue', s=40, label='JUNCTION', zorder=5)
+        ax.scatter(junction_coords[:,0], junction_coords[:,1], c='#3498db', s=45, label='JUNCTION', zorder=5, edgecolors='white', linewidth=1)
         
-    # 3. Plot Reservoirs (Red dots)
+    # 3. Plot Reservoirs (Bold red squares)
     res_coords = []
     for name in wn.reservoir_name_list:
         res_coords.append(wn.get_node(name).coordinates)
     if res_coords:
         res_coords = np.array(res_coords)
-        ax.scatter(res_coords[:,0], res_coords[:,1], c='red', s=60, label='RESERVOIR', zorder=6)
+        ax.scatter(res_coords[:,0], res_coords[:,1], c='#e74c3c', s=100, marker='s', label='RESERVOIR', zorder=6, edgecolors='black', linewidth=1.5)
         
-    # 4. Plot Tanks (Green dots if any)
+    # 4. Plot Tanks (Green cylinders/hexagons)
     tank_coords = []
     for name in wn.tank_name_list:
         tank_coords.append(wn.get_node(name).coordinates)
     if tank_coords:
         tank_coords = np.array(tank_coords)
-        ax.scatter(tank_coords[:,0], tank_coords[:,1], c='forestgreen', s=60, label='TANK', zorder=6)
+        ax.scatter(tank_coords[:,0], tank_coords[:,1], c='#2ecc71', s=120, marker='h', label='TANK', zorder=6, edgecolors='black', linewidth=1.5)
+
+    # 5. Plot Valves (Orange triangles)
+    valve_coords = []
+    for name in wn.valve_name_list:
+        valve = wn.get_link(name)
+        # Use midpoint or start node
+        start_node = wn.get_node(valve.start_node_name)
+        end_node = wn.get_node(valve.end_node_name)
+        mid_x = (start_node.coordinates[0] + end_node.coordinates[0]) / 2
+        mid_y = (start_node.coordinates[1] + end_node.coordinates[1]) / 2
+        valve_coords.append([mid_x, mid_y])
+    if valve_coords:
+        valve_coords = np.array(valve_coords)
+        ax.scatter(valve_coords[:,0], valve_coords[:,1], c='#f39c12', s=80, marker='D', label='VALVE/PRV', zorder=7, edgecolors='black', linewidth=1)
 
     # Styling
-    ax.set_title(judul, fontsize=16, pad=20, fontweight='bold')
-    ax.legend(loc='upper right', frameon=False, fontsize=10)
-    ax.set_axis_off() # Menghilangkan axes agar bersih seperti di gambar
+    ax.set_title(judul, fontsize=18, pad=25, fontweight='bold', color='#2c3e50')
+    ax.legend(loc='lower left', frameon=True, fontsize=10, shadow=True, borderpad=1)
+    ax.set_axis_off() 
     
     plt.tight_layout()
     st.pyplot(fig)

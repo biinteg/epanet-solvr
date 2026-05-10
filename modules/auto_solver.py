@@ -34,14 +34,19 @@ def run_auto_solver(tmp_path):
 
         standar_pipa = [50, 75, 100, 150, 200, 250, 300, 400, 500, 600, 800]
 
-        # Iterasi optimasi
-        for iterasi in range(5):
+        # Iterasi optimasi (Ditingkatkan ke 10 iterasi)
+        for iterasi in range(10):
             d.openHydraulicAnalysis()
             d.runHydraulicAnalysis()
             d.closeHydraulicAnalysis()
 
             velocity = d.getLinkVelocity()
             headloss = d.getLinkHeadloss()
+            pressures = d.getNodePressure()
+            node_ids = d.getNodeNameID()
+
+            # Mapping node_id to pressure
+            node_p_map = {node_ids[j]: pressures[j] for j in range(len(node_ids))}
 
             for i in range(len(link_ids)):
                 v = abs(velocity[i])
@@ -49,6 +54,7 @@ def run_auto_solver(tmp_path):
                 d_now = d.getLinkDiameter(i + 1)
                 d_new = d_now
 
+                # Logic dasar: Atur diameter berdasarkan velocity dan headloss
                 if 0.001 < v < MIN_VELOCITY_MS:
                     kandidat = [x for x in standar_pipa if x < d_now]
                     if kandidat:
@@ -58,6 +64,17 @@ def run_auto_solver(tmp_path):
                     if kandidat:
                         d_new = min(kandidat)
 
+                # TAMBAHAN: Proteksi Tekanan
+                # Jika diameter diperkecil, cek apakah tekanan di node hilir masih aman
+                if d_new < d_now:
+                    link_info = wn.get_link(link_ids[i])
+                    # Ambil node end (hilir biasanya)
+                    end_node = link_info.end_node_name
+                    p_hilir = node_p_map.get(end_node, 100)
+                    
+                    if p_hilir < 15: # Safety margin: 15m (lebih tinggi dari limit 10m)
+                        d_new = d_now # Batal diperkecil demi menjaga tekanan
+                
                 if d_new != d_now:
                     d.setLinkDiameter(i + 1, d_new)
 
