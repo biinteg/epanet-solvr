@@ -37,9 +37,8 @@ def run_auto_solver(tmp_path):
 
         # Iterasi optimasi (Ditingkatkan ke 10 iterasi)
         for iterasi in range(10):
-            d.openHydraulicAnalysis()
-            d.runHydraulicAnalysis()
-            d.closeHydraulicAnalysis()
+            # Gunakan solveCompleteHydraulics untuk memastikan seluruh state terhitung dengan benar
+            d.solveCompleteHydraulics()
 
             velocity = d.getLinkVelocity()
             headloss = d.getLinkHeadloss()
@@ -84,9 +83,7 @@ def run_auto_solver(tmp_path):
                     d.setLinkDiameter(i + 1, d_new)
 
         # Run final
-        d.openHydraulicAnalysis()
-        d.runHydraulicAnalysis()
-        d.closeHydraulicAnalysis()
+        d.solveCompleteHydraulics()
 
         final_velocity = d.getLinkVelocity()
         final_headloss = d.getLinkHeadloss()
