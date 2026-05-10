@@ -231,92 +231,92 @@ def render():
             else:
                 st.markdown("---")
                 if res["type"] == "ultra":
-                st.success("⚡ Ultra Optimization Finished. Combined Auto-Diameter and Triple PRV Stabilization.")
-                tabs = st.tabs(["Diameters (Stage 1)", "Pressure (Stage 2)", "Final Network"])
-                with tabs[0]:
-                    st.markdown("### Hasil Optimasi Diameter")
-                    df1 = res["stage1"]["df"]
-                    if "Status" in df1.columns:
-                        st.dataframe(df1.style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
-                    else:
-                        st.dataframe(df1, use_container_width=True)
-                with tabs[1]:
-                    st.markdown("### Perbandingan Tekanan Final")
-                    if "prv_results" in res["stage2"]:
-                        st.success(f"PRV installed on: {', '.join(res['stage2']['prv_results']['best_combo'])}")
-                        df2 = res["stage2"]["prv_results"]["df_compare"]
-                        if "Status" in df2.columns:
-                            st.dataframe(df2.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                    st.success("⚡ Ultra Optimization Finished. Combined Auto-Diameter and Triple PRV Stabilization.")
+                    tabs = st.tabs(["Diameters (Stage 1)", "Pressure (Stage 2)", "Final Network"])
+                    with tabs[0]:
+                        st.markdown("### Hasil Optimasi Diameter")
+                        df1 = res["stage1"]["df"]
+                        if "Status" in df1.columns:
+                            st.dataframe(df1.style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
                         else:
-                            st.dataframe(df2, use_container_width=True)
-                    else:
-                        df2_awal = res["stage2"]["df_awal"]
-                        if "Status" in df2_awal.columns:
-                            st.dataframe(df2_awal.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                            st.dataframe(df1, use_container_width=True)
+                    with tabs[1]:
+                        st.markdown("### Perbandingan Tekanan Final")
+                        if "prv_results" in res["stage2"]:
+                            st.success(f"PRV installed on: {', '.join(res['stage2']['prv_results']['best_combo'])}")
+                            df2 = res["stage2"]["prv_results"]["df_compare"]
+                            if "Status" in df2.columns:
+                                st.dataframe(df2.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                            else:
+                                st.dataframe(df2, use_container_width=True)
                         else:
-                            st.dataframe(df2_awal, use_container_width=True)
-                with tabs[2]:
-                    st.markdown("### Visualisasi Akhir")
-                    viz_mode = st.radio("Mode Visualisasi", ["Static Map", "Interactive (Plotly)"], horizontal=True, key="ultra_viz")
-                    final_network = res["stage2"]["prv_results"]["best_network"] if "prv_results" in res["stage2"] else res["stage2"]["wn_initial"]
-                    final_pressures = res["stage2"]["prv_results"]["best_result"] if "prv_results" in res["stage2"] else res["stage2"]["tekanan_awal"]
-                    
-                    if viz_mode == "Static Map":
-                        tampilkan_network(final_network, final_pressures, "Network Topology After Ultra Optimization")
-                    else:
-                        tampilkan_network_plotly(final_network, final_pressures, "Interactive Topology (Hover to see Pressure)")
-                    
-                with open(res["final_inp"], "rb") as f:
-                    st.download_button("📥 DOWNLOAD ULTRA OPTIMIZED NETWORK (.inp)", data=f, file_name="Ultra_Optimized_Result.inp", mime="text/plain", use_container_width=True)
-
-            elif res["type"] == "pressure":
-                st.markdown("### 📊 Diagnosis Tekanan")
-                if "prv_results" in res:
-                    st.success(f"✅ Triple PRV Optimization Complete. Best combo: {', '.join(res['prv_results']['best_combo'])}")
-                    
-                    tabs_p = st.tabs(["📊 Pressure Comparison", "🗺️ Final Map"])
-                    with tabs_p[0]:
-                        df_comp = res["prv_results"]["df_compare"]
-                        st.dataframe(df_comp.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                            df2_awal = res["stage2"]["df_awal"]
+                            if "Status" in df2_awal.columns:
+                                st.dataframe(df2_awal.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                            else:
+                                st.dataframe(df2_awal, use_container_width=True)
+                    with tabs[2]:
+                        st.markdown("### Visualisasi Akhir")
+                        viz_mode = st.radio("Mode Visualisasi", ["Static Map", "Interactive (Plotly)"], horizontal=True, key="ultra_viz")
+                        final_network = res["stage2"]["prv_results"]["best_network"] if "prv_results" in res["stage2"] else res["stage2"]["wn_initial"]
+                        final_pressures = res["stage2"]["prv_results"]["best_result"] if "prv_results" in res["stage2"] else res["stage2"]["tekanan_awal"]
                         
-                        # Download button
-                        with open(res["prv_results"]["inp_path"], "rb") as f:
-                            st.download_button("📥 Download Optimized Network (.inp)", data=f, file_name="PRV_Optimized_Result.inp", use_container_width=True)
-                    
-                    with tabs_p[1]:
-                        viz_mode_p = st.radio("Mode Visualisasi", ["Static Map", "Interactive (Plotly)"], horizontal=True, key="press_viz")
-                        if viz_mode_p == "Static Map":
-                            tampilkan_network(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Final Network with Triple PRV")
+                        if viz_mode == "Static Map":
+                            tampilkan_network(final_network, final_pressures, "Network Topology After Ultra Optimization")
                         else:
-                            tampilkan_network_plotly(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Interactive Pressure Map")
-                else:
-                    st.warning("⚠️ No Triple PRV combination found that improves the network or matches the safety criteria.")
-                    st.dataframe(res["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                            tampilkan_network_plotly(final_network, final_pressures, "Interactive Topology (Hover to see Pressure)")
+                        
+                    with open(res["final_inp"], "rb") as f:
+                        st.download_button("📥 DOWNLOAD ULTRA OPTIMIZED NETWORK (.inp)", data=f, file_name="Ultra_Optimized_Result.inp", mime="text/plain", use_container_width=True)
 
-            elif res["type"] == "auto_solver":
-                st.markdown("### 📊 Ringkasan Optimasi Diameter")
-                st.info("💡 Tip: Gunakan fitur 'Ultra Optimize' untuk menggabungkan optimasi ini dengan stabilisasi tekanan otomatis.")
-                df_auto = res["df"]
-                if "Status" in df_auto.columns:
-                    st.dataframe(df_auto.style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
-                else:
-                    st.dataframe(df_auto, use_container_width=True)
-                with open(res["inp_file_path"], "rb") as f:
-                    st.download_button("📥 Download Optimized Network", data=f, file_name="Diameter_Optimized.inp", use_container_width=True)
+                elif res["type"] == "pressure":
+                    st.markdown("### 📊 Diagnosis Tekanan")
+                    if "prv_results" in res:
+                        st.success(f"✅ Triple PRV Optimization Complete. Best combo: {', '.join(res['prv_results']['best_combo'])}")
+                        
+                        tabs_p = st.tabs(["📊 Pressure Comparison", "🗺️ Final Map"])
+                        with tabs_p[0]:
+                            df_comp = res["prv_results"]["df_compare"]
+                            st.dataframe(df_comp.style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
+                            
+                            # Download button
+                            with open(res["prv_results"]["inp_path"], "rb") as f:
+                                st.download_button("📥 Download Optimized Network (.inp)", data=f, file_name="PRV_Optimized_Result.inp", use_container_width=True)
+                        
+                        with tabs_p[1]:
+                            viz_mode_p = st.radio("Mode Visualisasi", ["Static Map", "Interactive (Plotly)"], horizontal=True, key="press_viz")
+                            if viz_mode_p == "Static Map":
+                                tampilkan_network(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Final Network with Triple PRV")
+                            else:
+                                tampilkan_network_plotly(res["prv_results"]["best_network"], res["prv_results"]["best_result"], "Interactive Pressure Map")
+                    else:
+                        st.warning("⚠️ No Triple PRV combination found that improves the network or matches the safety criteria.")
+                        st.dataframe(res["df_awal"].style.map(warnai_status_tekanan, subset=["Status"]), use_container_width=True)
 
-            elif res["type"] == "hardy_cross":
-                st.success(f"⚖️ Hardy Cross Analysis Finished in {res['iterations']} iterations.")
-                h_tabs = st.tabs(["Iterasi Loop", "Debit Final", "Final Network"])
-                with h_tabs[0]:
-                    st.markdown("### Log Konvergensi Loop")
-                    st.dataframe(res["history_df"], use_container_width=True)
-                with h_tabs[1]:
-                    st.markdown("### Perbandingan Debit Awal vs Akhir")
-                    st.dataframe(res["final_df"], use_container_width=True)
-                with h_tabs[2]:
-                    st.markdown("### Visualisasi Aliran")
-                    dummy_tekanan = {n: 0 for n in res["wn"].node_name_list}
-                    tampilkan_network(res["wn"], dummy_tekanan, "Hardy Cross Flow Distribution")
+                elif res["type"] == "auto_solver":
+                    st.markdown("### 📊 Ringkasan Optimasi Diameter")
+                    st.info("💡 Tip: Gunakan fitur 'Ultra Optimize' untuk menggabungkan optimasi ini dengan stabilisasi tekanan otomatis.")
+                    df_auto = res["df"]
+                    if "Status" in df_auto.columns:
+                        st.dataframe(df_auto.style.map(warnai_status_solver, subset=["Status"]), use_container_width=True)
+                    else:
+                        st.dataframe(df_auto, use_container_width=True)
+                    with open(res["inp_file_path"], "rb") as f:
+                        st.download_button("📥 Download Optimized Network", data=f, file_name="Diameter_Optimized.inp", use_container_width=True)
+
+                elif res["type"] == "hardy_cross":
+                    st.success(f"⚖️ Hardy Cross Analysis Finished in {res['iterations']} iterations.")
+                    h_tabs = st.tabs(["Iterasi Loop", "Debit Final", "Final Network"])
+                    with h_tabs[0]:
+                        st.markdown("### Log Konvergensi Loop")
+                        st.dataframe(res["history_df"], use_container_width=True)
+                    with h_tabs[1]:
+                        st.markdown("### Perbandingan Debit Awal vs Akhir")
+                        st.dataframe(res["final_df"], use_container_width=True)
+                    with h_tabs[2]:
+                        st.markdown("### Visualisasi Aliran")
+                        dummy_tekanan = {n: 0 for n in res["wn"].node_name_list}
+                        tampilkan_network(res["wn"], dummy_tekanan, "Hardy Cross Flow Distribution")
 
     st.html("""
         <div class="footer">
