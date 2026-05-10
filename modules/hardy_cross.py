@@ -173,7 +173,8 @@ def run_hardy_cross(inp_path):
             "converged": converged,
             "iterations": final_iter,
             "flows": flows,
-            "loops_found": len(loops)
+            "loops_found": len(loops),
+            "wn": wn_topo
         }
     finally:
         if d:
