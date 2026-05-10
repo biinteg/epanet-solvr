@@ -24,7 +24,7 @@ def run_hardy_cross(inp_path):
         node_ids = d.getNodeNameID()
         
         # Link connections (indices are 1-based in epyt)
-        link_nodes = d.getNodesConnectedToLink() 
+        link_nodes = d.getLinkNodes() 
         
         # Link properties
         diameters = d.getLinkDiameter()

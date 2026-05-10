@@ -76,7 +76,7 @@ def run_auto_solver(tmp_path):
                     end_node = link_info.end_node_name
                     p_hilir = node_p_map.get(end_node, 100)
                     
-                    if p_hilir < 11: # Safety margin: 11m (lebih realistis dibanding 15m, limit tetap 10m)
+                    if p_hilir < MIN_PRESSURE_M: # Gunakan batas minimum standar (10m)
                         d_new = d_now # Batal diperkecil demi menjaga tekanan
                 
                 if d_new != d_now:
@@ -89,6 +89,9 @@ def run_auto_solver(tmp_path):
 
         final_velocity = d.getLinkVelocity()
         final_headloss = d.getLinkHeadloss()
+        final_pressures = d.getNodePressure()
+        final_node_ids = d.getNodeNameID()
+        final_node_p_map = {final_node_ids[j]: final_pressures[j] for j in range(len(final_node_ids))}
 
         hasil = []
         berubah = 0
@@ -120,6 +123,9 @@ def run_auto_solver(tmp_path):
             # Use the mapping created with wntr
             label_pipa = pipe_names_map.get(link_ids[i], f"Pipa {link_ids[i]}")
 
+            # Ambil tekanan di node hilir untuk ditampilkan
+            p_hilir_val = final_node_p_map.get(link_info.end_node_name, 0)
+
             hasil.append({
                 "ID": link_ids[i],
                 "Nama Pipa": label_pipa,
@@ -127,6 +133,7 @@ def run_auto_solver(tmp_path):
                 "Diameter Baru": f"{akhir:.0f} mm",
                 "Velocity": f"{v:.3f} m/s",
                 "Headloss": f"{h_grad:.3f} m/km",
+                "Pressure": f"{p_hilir_val:.1f} m",
                 "Status": status,
                 "Compliance": "Aman" if sesuai_permen else "Tidak Aman"
             })
