@@ -224,9 +224,13 @@ def render():
         # Results Display
         if "solver_results" in st.session_state:
             res = st.session_state["solver_results"]
-            st.markdown("---")
             
-            if res["type"] == "ultra":
+            # Ensure the results dictionary has a type key to avoid KeyError
+            if "type" not in res:
+                st.error("Format hasil optimasi tidak valid (missing type).")
+            else:
+                st.markdown("---")
+                if res["type"] == "ultra":
                 st.success("⚡ Ultra Optimization Finished. Combined Auto-Diameter and Triple PRV Stabilization.")
                 tabs = st.tabs(["Diameters (Stage 1)", "Pressure (Stage 2)", "Final Network"])
                 with tabs[0]:

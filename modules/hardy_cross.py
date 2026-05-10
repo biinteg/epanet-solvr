@@ -18,25 +18,33 @@ def run_hardy_cross(inp_path):
         raise Exception(f"Gagal membaca file .inp dengan epyt: {e}")
 
     try:
+        # Use wntr for reliable topology mapping
+        # pyrefly: ignore [missing-import]
+        import wntr
+        wn_topo = wntr.network.WaterNetworkModel(inp_path)
+        
         # Build Graph
         G = nx.MultiGraph()
         link_ids = d.getLinkNameID()
         node_ids = d.getNodeNameID()
-        
-        # Link connections (indices are 1-based in epyt)
-        link_nodes = d.getLinkNodes() 
         
         # Link properties
         diameters = d.getLinkDiameter()
         lengths = d.getLinkLength()
         roughness = d.getLinkRoughness()
 
-        for i, p_name in enumerate(link_ids):
-            start_node_idx, end_node_idx = link_nodes[i]
-            u = node_ids[start_node_idx - 1]
-            v = node_ids[end_node_idx - 1]
-            if diameters[i] > 0 and lengths[i] > 0:
-                G.add_edge(u, v, key=p_name)
+        # Build a mapping of link name -> (start_node, end_node) using wntr
+        link_nodes_map = {}
+        for l_name in link_ids:
+            link = wn_topo.get_link(l_name)
+            u_name = link.start_node_name
+            v_name = link.end_node_name
+            link_nodes_map[l_name] = (u_name, v_name)
+            
+            # Add to graph if physical pipe
+            l_idx = link_ids.index(l_name)
+            if diameters[l_idx] > 0 and lengths[l_idx] > 0:
+                G.add_edge(u_name, v_name, key=l_name)
 
         reservoir_names = d.getNodeReservoirNameID()
         tank_names = d.getNodeTankNameID()
@@ -82,10 +90,8 @@ def run_hardy_cross(inp_path):
             # Find the pipe connecting parent and node
             pipe_name = list(G[parent][node].keys())[0]
             
-            # Check orientation using epyt metadata
-            p_idx = link_ids.index(pipe_name)
-            s_idx, e_idx = link_nodes[p_idx]
-            start_node_name = node_ids[s_idx - 1]
+            # Check orientation using wntr mapping
+            start_node_name, _ = link_nodes_map[pipe_name]
             
             required_flow = current_demands[node]
             if start_node_name == parent: 
@@ -98,10 +104,7 @@ def run_hardy_cross(inp_path):
         chords = set([p for i, p in enumerate(link_ids) if diameters[i] > 0]) - set(tree_pipes)
         loops = []
         for chord_name in chords:
-            p_idx = link_ids.index(chord_name)
-            s_idx, e_idx = link_nodes[p_idx]
-            u = node_ids[s_idx - 1]
-            v = node_ids[e_idx - 1]
+            u, v = link_nodes_map[chord_name]
             try: path_nodes = nx.shortest_path(T_undirected, v, u)
             except: continue
             loop_pipes = [(chord_name, 1)]
@@ -109,11 +112,8 @@ def run_hardy_cross(inp_path):
                 curr_n = path_nodes[i]; next_n = path_nodes[i+1]
                 for p_name in G[curr_n][next_n].keys():
                     if p_name in tree_pipes:
-                        # Check orientation
-                        pt_idx = link_ids.index(p_name)
-                        st_idx, et_idx = link_nodes[pt_idx]
-                        st_name = node_ids[st_idx - 1]
-                        et_name = node_ids[et_idx - 1]
+                        # Check orientation using wntr mapping
+                        st_name, et_name = link_nodes_map[p_name]
                         loop_pipes.append((p_name, 1 if st_name == curr_n and et_name == next_n else -1))
                         break
             loops.append(loop_pipes)
@@ -144,9 +144,7 @@ def run_hardy_cross(inp_path):
         final_results = []
         for i, p_name in enumerate(link_ids):
             if diameters[i] > 0:
-                s_idx, e_idx = link_nodes[i]
-                u = node_ids[s_idx - 1]
-                v = node_ids[e_idx - 1]
+                u, v = link_nodes_map[p_name]
                 final_results.append({
                     "Pipa ID": f"{p_name} ({u}-{v})",
                     "Debit Awal (L/s)": initial_flows[p_name] * 1000,

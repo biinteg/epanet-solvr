@@ -11,6 +11,7 @@ from modules.helpers import (
     MAX_HEADLOSS_M_PER_KM,
     MAX_VELOCITY_MS,
     MIN_VELOCITY_MS,
+    MIN_PRESSURE_M,
     warnai_status_solver,
 )
 
