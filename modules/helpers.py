@@ -145,7 +145,7 @@ def tampilkan_network_plotly(wn, tekanan_dict=None, judul="Interactive Network V
         node_x.append(x)
         node_y.append(y)
         
-        p = tekanan_dict.get(node_name, 0) if tekanan_dict else 0
+        p = tekanan_dict.get(node_name, 0) if tekanan_dict is not None else 0
         if pd.isna(p): p = 0
         
         info = f"Node: {node_name}<br>Pressure: {p:.2f} m"
