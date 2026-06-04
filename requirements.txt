@@ -6,3 +6,6 @@ matplotlib
 numpy
 networkx
 plotly
+fastapi
+python-multipart
+uvicorn

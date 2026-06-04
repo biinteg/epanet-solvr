@@ -5,8 +5,7 @@ import os
 import time
 from datetime import datetime, timedelta, timezone
 from views import styles
-from modules.auto_solver import run_auto_solver
-from modules.pressure_analysis import run_pressure_analysis
+import solver
 from modules.hardy_cross import run_hardy_cross
 from modules.helpers import (
     warnai_status_solver, 
@@ -170,24 +169,59 @@ def render():
                     if "Ultra" in menu:
                         # STAGE 1: Auto Solver
                         add_log("STAGE 1: Optimizing Pipe Diameters...", 'info')
-                        res1 = run_auto_solver(tmp_path)
-                        # STAGE 2: Pressure Analysis on optimized diameters
-                        add_log("STAGE 2: Stabilizing Pressure & PRV Placement...", 'info')
-                        res2 = run_pressure_analysis(res1["inp_file_path"], target_prv=target_prv, run_triple_prv=True)
+                        progress_bar = st.progress(0.0, text="STAGE 1: Menyiapkan solver...")
+                        gen = solver.optimize_diameter_generator(tmp_path)
+                        res1 = None
+                        for progress_pct, status_val in gen:
+                            if isinstance(status_val, dict):
+                                res1 = status_val
+                            else:
+                                progress_bar.progress(progress_pct, text=f"STAGE 1: {status_val}")
+                                add_log(f"STAGE 1: {status_val}", 'info')
+                        progress_bar.empty()
+                        
+                        # STAGE 2: Baseline Pressure Analysis on optimized diameters
+                        add_log("STAGE 2: Analyzing Final Pressures...", 'info')
+                        res2_p = solver.analyze_pressure(res1["inp_file_path"])
+                        res2 = {
+                            "df_awal": pd.DataFrame(res2_p["table"]),
+                            "metrics_awal": res2_p["metrics"]
+                        }
                         
                         results_container = {
                             "type": "ultra",
-                            "stage1": res1,
+                            "stage1": {
+                                "df": pd.DataFrame(res1["table"]),
+                                "metrics": res1["metrics"]
+                            },
                             "stage2": res2,
-                            "final_inp": (res2["prv_results"]["inp_path"] 
-                                          if ("prv_results" in res2 and isinstance(res2["prv_results"], dict)) 
-                                          else res1["inp_file_path"])
+                            "final_inp": res1["inp_file_path"]
                         }
                         add_log("ULTRA OPTIMIZATION COMPLETE!", 'success')
                     elif "Auto-Solver" in menu:
-                        results_container = run_auto_solver(tmp_path)
+                        progress_bar = st.progress(0.0, text="Menyiapkan solver...")
+                        gen = solver.optimize_diameter_generator(tmp_path)
+                        res_auto = None
+                        for progress_pct, status_val in gen:
+                            if isinstance(status_val, dict):
+                                res_auto = status_val
+                            else:
+                                progress_bar.progress(progress_pct, text=status_val)
+                                add_log(status_val, 'info')
+                        progress_bar.empty()
+                        results_container = {
+                            "type": "auto_solver",
+                            "df": pd.DataFrame(res_auto["table"]),
+                            "metrics": res_auto["metrics"],
+                            "inp_file_path": res_auto["inp_file_path"]
+                        }
                     elif "Pressure" in menu:
-                        results_container = run_pressure_analysis(tmp_path, target_prv=target_prv, run_triple_prv=True)
+                        res_p = solver.analyze_pressure(tmp_path)
+                        results_container = {
+                            "type": "pressure",
+                            "df_awal": pd.DataFrame(res_p["table"]),
+                            "metrics_awal": res_p["metrics"]
+                        }
                     elif "Hardy Cross" in menu:
                         results_container = run_hardy_cross(tmp_path)
                     

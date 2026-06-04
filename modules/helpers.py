@@ -5,7 +5,22 @@ import matplotlib.pyplot as plt
 # pyrefly: ignore [missing-import]
 import numpy as np
 # pyrefly: ignore [missing-import]
-import wntr
+try:
+    import wntr
+except (ImportError, ModuleNotFoundError):
+    import sys
+    from unittest.mock import MagicMock
+    sys.modules['wntr.sim.aml._evaluator'] = MagicMock()
+    sys.modules['wntr.sim.network_isolation._network_isolation'] = MagicMock()
+    sys.modules['wntr.sim'] = MagicMock()
+    sys.modules['wntr.sim.core'] = MagicMock()
+    sys.modules['wntr.sim.aml'] = MagicMock()
+    sys.modules['wntr.sim.aml.evaluator'] = MagicMock()
+    sys.modules['wntr.sim.aml.aml'] = MagicMock()
+    sys.modules['wntr.sim.hydraulics'] = MagicMock()
+    sys.modules['wntr.sim.network_isolation'] = MagicMock()
+    sys.modules['wntr.sim.network_isolation.network_isolation'] = MagicMock()
+    import wntr
 # pyrefly: ignore [missing-import]
 import streamlit as st
 # pyrefly: ignore [missing-import]

@@ -1,190 +1,49 @@
-# solver.py
-# pyrefly: ignore [missing-import]
-from epyt import epanet
-# pyrefly: ignore [missing-import]
+# scratch/test_new_solver.py
+import sys
+from unittest.mock import MagicMock
+# Mock the entire wntr.sim package to prevent importing broken native modules
+sys.modules['wntr.sim'] = MagicMock()
+sys.modules['wntr.sim.core'] = MagicMock()
+sys.modules['wntr.sim.aml'] = MagicMock()
+sys.modules['wntr.sim.aml.evaluator'] = MagicMock()
+sys.modules['wntr.sim.aml.aml'] = MagicMock()
+sys.modules['wntr.sim.hydraulics'] = MagicMock()
+sys.modules['wntr.sim.network_isolation'] = MagicMock()
+sys.modules['wntr.sim.network_isolation.network_isolation'] = MagicMock()
+
+import os
+import shutil
+import tempfile
 import pandas as pd
 import numpy as np
-import os
+# pyrefly: ignore [missing-import]
+from epyt import epanet
 
-# Konstanta Desain (Standar Permen PU No. 18/PRT/M/2007)
-MIN_PRESSURE_M = 10.0
-MAX_PRESSURE_M = 80.0
-MIN_VELOCITY_MS = 0.3
-MAX_VELOCITY_MS = 2.5
-MAX_HEADLOSS_M_PER_KM = 10.0
+# Tambahkan project root ke sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Standar diameter komersial pipa (mm)
+from modules.helpers import (
+    MAX_HEADLOSS_M_PER_KM,
+    MAX_VELOCITY_MS,
+    MIN_VELOCITY_MS,
+    MIN_PRESSURE_M,
+)
+
 standar_pipa = [50, 75, 100, 150, 200, 250, 300, 400, 500, 600, 800]
 commercial_diameters = [d / 1000.0 for d in standar_pipa]
 
-# Peta perubahan diameter untuk pencarian cepat
 smaller_map = {commercial_diameters[i]: commercial_diameters[max(0, i-1)] for i in range(len(commercial_diameters))}
 larger_map = {commercial_diameters[i]: commercial_diameters[min(len(commercial_diameters)-1, i+1)] for i in range(len(commercial_diameters))}
 
 def snap_to_commercial(d):
-    """Menyelaraskan diameter acak ke diameter komersial terdekat (meter)."""
     diffs = [abs(x - d) for x in commercial_diameters]
     return commercial_diameters[diffs.index(min(diffs))]
 
-def clean_inp_file(path):
-    """Menghapus tag yang menyebabkan Error 201 pada parser WNTR/EPANET."""
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
-        lines = f.readlines()
-    with open(path, "w", encoding="utf-8") as f:
-        skip = False
-        for line in lines:
-            u = line.strip().upper()
-            if u == "[LEAKAGE]":
-                skip = True
-                continue
-            if skip and line.startswith("["): 
-                skip = False
-            if "BACKFLOW ALLOWED" in u: 
-                continue
-            if not skip: 
-                f.write(line)
-
-def rename_inp_links_internal(inp_path, out_path):
-    """
-    Mengubah ID pipa dari p1, p2 menjadi format deskriptif (Node1-Node2) di berkas .inp.
-    Menggunakan parser WNTR jika tersedia, atau mengembalikan False jika terjadi kendala.
-    """
-    try:
-        # Impor wntr secara dinamis hanya saat dibutuhkan
-        try:
-            import wntr
-        except (ImportError, ModuleNotFoundError):
-            # Jika WNTR sim biner rusak/tidak terinstal, lakukan mock parsial
-            import sys
-            from unittest.mock import MagicMock
-            sys.modules['wntr.sim.aml._evaluator'] = MagicMock()
-            sys.modules['wntr.sim.network_isolation._network_isolation'] = MagicMock()
-            sys.modules['wntr.sim'] = MagicMock()
-            sys.modules['wntr.sim.core'] = MagicMock()
-            sys.modules['wntr.sim.aml'] = MagicMock()
-            sys.modules['wntr.sim.aml.evaluator'] = MagicMock()
-            sys.modules['wntr.sim.aml.aml'] = MagicMock()
-            sys.modules['wntr.sim.hydraulics'] = MagicMock()
-            sys.modules['wntr.sim.network_isolation'] = MagicMock()
-            sys.modules['wntr.sim.network_isolation.network_isolation'] = MagicMock()
-            import wntr
-            
-        wn = wntr.network.WaterNetworkModel(inp_path)
-        mapping = {}
-        
-        for name, link in wn.links():
-            s = str(link.start_node).replace(" ", "_").replace(";", "")
-            e = str(link.end_node).replace(" ", "_").replace(";", "")
-            new_id = f"{s}-{e}"
-            if len(new_id) > 31:
-                new_id = new_id[:31]
-            mapping[name] = new_id
-
-        with open(inp_path, 'r') as f:
-            lines = f.readlines()
-
-        new_lines = []
-        current_section = ""
-        link_sections = ["[PIPES]", "[PUMPS]", "[VALVES]", "[STATUS]", "[CONTROLS]", "[RULES]", "[REPORT]", "[TAGS]", "[VERTICES]"]
-
-        for line in lines:
-            stripped = line.strip()
-            if stripped.startswith("[") and stripped.endswith("]"):
-                current_section = stripped.upper()
-                new_lines.append(line)
-                continue
-            if not stripped or stripped.startswith(";"):
-                new_lines.append(line)
-                continue
-
-            if current_section in link_sections:
-                parts = line.split()
-                if parts and parts[0] in mapping:
-                    old_id = parts[0]
-                    new_id = mapping[old_id]
-                    line = line.replace(old_id, new_id, 1)
-            new_lines.append(line)
-
-        with open(out_path, 'w') as f:
-            f.writelines(new_lines)
-        return True
-    except Exception as e:
-        print(f"Error renaming INP: {e}")
-        return False
-
-def analyze_pressure(tmp_path):
-    """
-    Menganalisis tekanan baseline (t=0) pada seluruh junction di jaringan.
-    Mengembalikan data terstruktur murni Python (dict & list).
-    """
-    clean_inp_file(tmp_path)
-    d = epanet(tmp_path)
-    try:
-        node_ids = d.getNodeNameID()
-        node_types = d.getNodeType()
-        
-        # Filter junction (tipe 'JUNCTION')
-        junctions = [node_ids[i] for i in range(len(node_ids)) if node_types[i].upper() == 'JUNCTION']
-        
-        d.openHydraulicAnalysis()
-        d.runHydraulicAnalysis()
-        d.closeHydraulicAnalysis()
-        
-        raw_pressures = d.getNodePressure()
-        pressures_dict = {node_ids[i]: raw_pressures[i] for i in range(len(node_ids))}
-        
-        data_awal = []
-        low_p = 0
-        high_p = 0
-        
-        for node in junctions:
-            p = pressures_dict.get(node, 0.0)
-            # Antisipasi nilai absurd
-            if pd.isna(p) or p < -100:
-                p = 0.0
-            
-            if p < MIN_PRESSURE_M:
-                status = "Terlalu Rendah"
-                low_p += 1
-            elif p > MAX_PRESSURE_M:
-                status = "Bahaya (Terlalu Tinggi)"
-                high_p += 1
-            else:
-                status = "Aman"
-            data_awal.append({"Node": node, "Tekanan": float(round(p, 2)), "Status": status})
-            
-        return {
-            "metrics": {
-                "low": int(low_p), 
-                "high": int(high_p), 
-                "total": int(len(junctions))
-            },
-            "table": data_awal
-        }
-    finally:
-        d.unload()
-
-def optimize_diameter(tmp_path):
-    """
-    Wrapper fungsi sinkron untuk optimasi diameter pipa.
-    Mengonsumsi generator optimize_diameter_generator dan mengembalikan hasil akhirnya.
-    """
-    generator = optimize_diameter_generator(tmp_path)
-    final_res = None
-    for _, val in generator:
-        if isinstance(val, dict) and val.get("type") == "auto_solver":
-            final_res = val
-    return final_res
-
-def optimize_diameter_generator(tmp_path):
-    """
-    Generator solver optimasi diameter pipa menggunakan EPyT & Pandas.
-    Menghasilkan data progress dan status update, diakhiri dengan data hasil optimasi.
-    """
-    yield 0.05, "Membersihkan file input EPANET..."
+def run_auto_solver_generator(tmp_path):
+    print("[1/5] Memuat model jaringan via EPyT...")
+    from solver import clean_inp_file
     clean_inp_file(tmp_path)
     
-    yield 0.08, "Memuat jaringan pipa ke dalam engine C-EPANET..."
     d = epanet(tmp_path)
     
     link_ids = d.getLinkNameID()
@@ -192,8 +51,12 @@ def optimize_diameter_generator(tmp_path):
     link_types = d.getLinkType()
     node_types = d.getNodeType()
     
+    # Filter berdasarkan string type yang dikembalikan EPyT
     pipes = [link_ids[i] for i in range(len(link_ids)) if link_types[i].upper() == 'PIPE']
     junctions = [node_ids[i] for i in range(len(node_ids)) if node_types[i].upper() == 'JUNCTION']
+    
+    print(f"Pipa terdeteksi: {pipes}")
+    print(f"Junction terdeteksi: {junctions}")
     
     original_diameters = {}
     lengths = {}
@@ -204,7 +67,7 @@ def optimize_diameter_generator(tmp_path):
         name = link_ids[i]
         if name in pipes:
             original_diameters[name] = d.getLinkDiameter(i + 1)
-            lengths[name] = d.getLinkLength(i + 1)
+            lengths[name] = d.getLinkLength(i + 1) # meter
             
             start_node_idx = link_nodes[i][0]
             end_node_idx = link_nodes[i][1]
@@ -216,6 +79,8 @@ def optimize_diameter_generator(tmp_path):
     lengths_clean = lengths_series.copy()
     lengths_clean[lengths_clean <= 0] = 1.0
     
+    yield 0.05, "Jaringan pipa dimuat. Memulai simulasi awal..."
+    
     def check_constraints(epanet_model):
         try:
             epanet_model.openHydraulicAnalysis()
@@ -226,8 +91,10 @@ def optimize_diameter_generator(tmp_path):
             raw_velocities = epanet_model.getLinkVelocity()
             raw_headloss = epanet_model.getLinkHeadloss()
             
+            # Ubah output array numpy ke pandas Series dengan index nama
             pressures = pd.Series(raw_pressures, index=node_ids).loc[junctions]
             velocities = pd.Series(raw_velocities, index=link_ids).loc[pipes].abs()
+            
             hl_gradients = pd.Series(raw_headloss, index=link_ids).loc[pipes].abs()
             headloss_totals = hl_gradients * (lengths_series / 1000.0)
             
@@ -254,15 +121,13 @@ def optimize_diameter_generator(tmp_path):
                 "headloss_totals": pd.Series(999.0, index=pipes),
                 "error": str(e)
             }
-            
-    # Penyesuaian awal
+
     for name in pipes:
         idx = link_ids.index(name) + 1
         d_val = d.getLinkDiameter(idx)
         d.setLinkDiameter(idx, snap_to_commercial(d_val / 1000.0) * 1000.0)
         
-    # FASE 1: Penyesuaian Kelayakan Berbasis Vektor Kecepatan & Headloss
-    yield 0.12, "Fase 1: Memulai optimasi kelayakan hidrolis awal..."
+    yield 0.1, "Menjalankan optimasi kelayakan awal (Fase 1)..."
     for iter_f1 in range(5):
         eval_res = check_constraints(d)
         if not eval_res["success"]:
@@ -294,14 +159,12 @@ def optimize_diameter_generator(tmp_path):
         if not changed:
             break
             
-        progress = 0.12 + (iter_f1 / 5.0) * 0.2
-        yield progress, f"Iterasi Kelayakan {iter_f1 + 1}/5 selesai. Menghitung profil..."
+        yield 0.1 + (iter_f1 / 5.0) * 0.2, f"Iterasi Kelayakan {iter_f1 + 1}/5 selesai."
         
     eval_res = check_constraints(d)
     
-    # FASE 2: Optimasi Tekanan dan Penciutan Diameter Pipa (Minimisasi Biaya)
     if not eval_res["is_safe"]:
-        yield 0.35, "Tekanan minimum terlalu rendah. Memperbesar diameter pipa bottleneck..."
+        yield 0.35, "Tekanan awal tidak aman. Memperbesar pipa bottleneck..."
         sorted_pipes_by_hl = eval_res["headloss_totals"].sort_values(ascending=False).index.tolist()
         for name in sorted_pipes_by_hl:
             idx = link_ids.index(name) + 1
@@ -313,13 +176,12 @@ def optimize_diameter_generator(tmp_path):
             if test_res["is_safe"] or test_res["min_p"] > eval_res["min_p"]:
                 eval_res = test_res
                 if eval_res["is_safe"]:
-                    yield 0.45, "Tekanan jaringan berhasil dipulihkan ke batas aman!"
+                    yield 0.45, "Tekanan berhasil dipulihkan ke batas aman!"
                     break
             else:
                 d.setLinkDiameter(idx, d_now * 1000.0)
                 
-    # Batch-shrinking
-    yield 0.50, "Fase 2: Menghitung laju sensitivitas pipa..."
+    yield 0.5, "Mengecilkan pipa non-sensitif secara masal (Batch Shrinking)..."
     insensitive_pipes = []
     for name in pipes:
         idx = link_ids.index(name) + 1
@@ -328,7 +190,6 @@ def optimize_diameter_generator(tmp_path):
             insensitive_pipes.append(name)
             
     if insensitive_pipes:
-        yield 0.55, f"Melakukan Batch-shrinking secara masal pada {len(insensitive_pipes)} pipa..."
         backup_diams = {name: d.getLinkDiameter(link_ids.index(name) + 1) / 1000.0 for name in insensitive_pipes}
         for name in insensitive_pipes:
             idx = link_ids.index(name) + 1
@@ -337,14 +198,13 @@ def optimize_diameter_generator(tmp_path):
         test_res = check_constraints(d)
         if test_res["is_safe"] and (test_res["velocities"] <= MAX_VELOCITY_MS).all() and (test_res["hl_gradients"] <= MAX_HEADLOSS_M_PER_KM).all():
             eval_res = test_res
-            yield 0.62, "Batch-shrinking masal berhasil mengoptimalkan biaya pipa."
+            yield 0.6, f"Batch-shrinking berhasil menghemat diameter {len(insensitive_pipes)} pipa!"
         else:
             for name in insensitive_pipes:
                 idx = link_ids.index(name) + 1
                 d.setLinkDiameter(idx, backup_diams[name] * 1000.0)
-            yield 0.62, "Batch-shrinking melanggar kendala hidrolis. Berpindah ke optimasi individu..."
+            yield 0.6, "Batch-shrinking melanggar batas keamanan. Lanjut ke evaluasi individu..."
             
-    # Optimasi Individu
     yield 0.65, "Memulai optimasi biaya pipa individu..."
     sorted_pipes_ascending = eval_res["headloss_totals"].sort_values(ascending=True).index.tolist()
     
@@ -374,12 +234,12 @@ def optimize_diameter_generator(tmp_path):
         progress = 0.65 + (idx / len(sorted_pipes_ascending)) * 0.3
         yield progress, f"Optimasi pipa {idx+1}/{len(sorted_pipes_ascending)} ({name}) selesai."
         
-    yield 0.95, "Optimasi selesai. Menyusun berkas jaringan final..."
+    yield 0.95, "Optimasi selesai. Menyusun file hasil..."
+    
     new_inp = tmp_path.replace(".inp", "_optimized.inp")
     d.saveInputFile(new_inp)
     d.unload()
     
-    # Reload file hasil untuk menyusun data luaran final
     d_final = epanet(new_inp)
     final_results = check_constraints(d_final)
     
@@ -417,37 +277,55 @@ def optimize_diameter_generator(tmp_path):
         
     d_final.unload()
     
-    # Bersihkan file hasil optimasi sebelum WNTR membaca untuk rename
+    # Bersihkan file hasil optimasi sebelum WNTR membaca untuk rename link
+    from solver import clean_inp_file
     clean_inp_file(new_inp)
     
+    from modules.helpers import rename_inp_links
     final_inp = tmp_path.replace(".inp", "_final.inp")
-    if rename_inp_links_internal(new_inp, final_inp):
+    if rename_inp_links(new_inp, final_inp):
         if os.path.exists(new_inp): os.remove(new_inp)
     else:
         final_inp = new_inp
         
-    # Baca isi file hasil untuk dikembalikan sebagai string
-    try:
-        with open(final_inp, "r", encoding="utf-8", errors="ignore") as f:
-            inp_content = f.read()
-    except Exception as e:
-        print(f"Error reading final INP file: {e}")
-        inp_content = ""
-
     df = pd.DataFrame(hasil)
-    # Ubah DataFrame ke bentuk dict list standar Python
-    table_data = df.to_dict(orient="records")
-    
     output = {
         "type": "auto_solver",
-        "table": table_data,
+        "df": df,
         "metrics": {
-            "total": int(len(pipes)),
-            "changed": int(berubah),
-            "compliant": int(patuh)
+            "total": len(pipes),
+            "changed": berubah,
+            "compliant": patuh
         },
-        "inp_file_path": final_inp,
-        "optimized_inp_content": inp_content
+        "inp_file_path": final_inp
     }
-    
     yield 1.0, output
+
+if __name__ == "__main__":
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    test_inp_orig = os.path.join(base_dir, "scratch", "test.inp")
+    
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".inp") as tmp:
+        with open(test_inp_orig, 'rb') as f:
+            tmp.write(f.read())
+        tmp_path = tmp.name
+        
+    try:
+        print("Starting EPyT solver generator test with full sim mocks...")
+        generator = run_auto_solver_generator(tmp_path)
+        final_res = None
+        for progress, val in generator:
+            print(f"[{progress*100:.0f}%] {val if isinstance(val, str) else 'Result Dict Generated'}")
+            if isinstance(val, dict):
+                final_res = val
+                
+        print("\nOptimization complete! Metrics:")
+        print(final_res["metrics"])
+        print("\nResults DataFrame:")
+        print(final_res["df"].to_string())
+        print(f"\nFinal Optimized INP Path: {final_res['inp_file_path']}")
+        
+    finally:
+        if os.path.exists(tmp_path): os.remove(tmp_path)
+        final_file = tmp_path.replace(".inp", "_final.inp")
+        if os.path.exists(final_file): os.remove(final_file)
